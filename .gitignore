@@ -1,0 +1,9 @@
+# Default ignored files
+.gradle
+.idea
+.build
+
+# Java class files and jars
+*.class
+*.ear
+*.war

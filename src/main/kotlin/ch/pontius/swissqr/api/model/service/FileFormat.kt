@@ -1,4 +1,4 @@
-package ch.pontius.`swissqr-api`.model.service
+package ch.pontius.swissqr.api.model.service
 
 /**
  * File formats supported by this web service.

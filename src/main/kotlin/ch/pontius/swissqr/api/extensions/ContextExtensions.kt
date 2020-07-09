@@ -1,7 +1,7 @@
-package ch.pontius.`swissqr-api`.extensions
+package ch.pontius.swissqr.api.extensions
 
-import ch.pontius.`swissqr-api`.model.ErrorStatusException
-import ch.pontius.`swissqr-api`.model.Status
+import ch.pontius.swissqr.api.model.ErrorStatusException
+import ch.pontius.swissqr.api.model.Status
 import io.javalin.http.Context
 
 fun Context.errorResponse(status: Int, errorMessage: String) {

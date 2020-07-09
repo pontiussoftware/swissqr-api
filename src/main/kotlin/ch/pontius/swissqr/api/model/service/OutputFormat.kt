@@ -1,4 +1,4 @@
-package ch.pontius.`swissqr-api`.model.service
+package ch.pontius.swissqr.api.model.service
 
 /**
  * Output formats supported by this web sevice.

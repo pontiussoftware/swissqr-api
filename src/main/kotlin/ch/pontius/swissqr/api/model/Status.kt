@@ -1,4 +1,4 @@
-package ch.pontius.`swissqr-api`.model
+package ch.pontius.swissqr.api.model
 
 /**
  *

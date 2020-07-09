@@ -1,10 +1,11 @@
-package ch.pontius.`swissqr-api`.handlers
+package ch.pontius.swissqr.api.handlers
 
-import ch.pontius.`swissqr-api`.basics.PostRestHandler
-import ch.pontius.`swissqr-api`.model.ErrorStatusException
-import ch.pontius.`swissqr-api`.model.Status
-import ch.pontius.`swissqr-api`.model.service.FileFormat
-import ch.pontius.`swissqr-api`.model.service.OutputFormat
+import ch.pontius.swissqr.api.basics.PostRestHandler
+import ch.pontius.swissqr.api.model.ErrorStatusException
+import ch.pontius.swissqr.api.model.Status
+import ch.pontius.swissqr.api.model.bill.Bill
+import ch.pontius.swissqr.api.model.service.FileFormat
+import ch.pontius.swissqr.api.model.service.OutputFormat
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
@@ -33,7 +34,7 @@ class GenerateQRCodeHandler : PostRestHandler {
             OpenApiParam("height", Double::class, "Height of the resulting QR code in mm."),
             OpenApiParam("resolution", Int::class, "Resolution of the resulting QR code in mm.")
         ],
-        requestBody = OpenApiRequestBody([OpenApiContent(ch.pontius.`swissqr-api`.model.bill.Bill::class)]),
+        requestBody = OpenApiRequestBody([OpenApiContent(Bill::class)]),
         tags = ["QR generator"],
         responses = [
             OpenApiResponse("200", [OpenApiContent(ByteArray::class)]),
@@ -46,9 +47,12 @@ class GenerateQRCodeHandler : PostRestHandler {
 
         /* Extract invoice data. */
         val bill = try {
-            ctx.bodyAsClass(ch.pontius.`swissqr-api`.model.bill.Bill::class.java).toProcessableBill()
+            ctx.bodyAsClass(Bill::class.java).toProcessableBill()
         } catch (e: BadRequestResponse){
-            throw ErrorStatusException(400, "HTTP body could not be parsed into a valid QR invoice model!")
+            throw ErrorStatusException(
+                400,
+                "HTTP body could not be parsed into a valid QR invoice model!"
+            )
         }
 
         /* Extract and validate format parameters. */
@@ -72,16 +76,25 @@ class GenerateQRCodeHandler : PostRestHandler {
         val resolution = ctx.pathParamMap()["resolution"]?.toIntOrNull() ?: 150
 
         if (width < 0.0 || height < 0.0) {
-            throw ErrorStatusException(400, "Specified format is invalid: Width and height must be greater than zero.")
+            throw ErrorStatusException(
+                400,
+                "Specified format is invalid: Width and height must be greater than zero."
+            )
         }
         if (resolution < 144 || resolution >= 600) {
-            throw ErrorStatusException(400, "Specified format is invalid: Resolution but be between 144 and 600dpi must be greater than zero.")
+            throw ErrorStatusException(
+                400,
+                "Specified format is invalid: Resolution but be between 144 and 600dpi must be greater than zero."
+            )
         }
 
         /* Validate QR bill. */
         val validation = QRBill.validate(bill)
         if (!validation.isValid) {
-            throw ErrorStatusException(400, "Specified bill is not valid: ${validation.validationMessages.joinToString("\n\n") { it.messageKey }}")
+            throw ErrorStatusException(
+                400,
+                "Specified bill is not valid: ${validation.validationMessages.joinToString("\n\n") { it.messageKey }}"
+            )
         }
 
         /* Generate QR code. */

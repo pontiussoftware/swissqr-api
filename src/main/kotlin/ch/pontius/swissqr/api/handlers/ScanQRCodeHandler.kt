@@ -1,12 +1,12 @@
-package ch.pontius.`swissqr-api`.handlers
+package ch.pontius.swissqr.api.handlers
 
 import boofcv.factory.fiducial.FactoryFiducial
 import boofcv.io.image.ConvertBufferedImage
 import boofcv.struct.image.GrayU8
-import ch.pontius.`swissqr-api`.basics.PostRestHandler
-import ch.pontius.`swissqr-api`.model.ErrorStatusException
-import ch.pontius.`swissqr-api`.model.Status
-import ch.pontius.`swissqr-api`.model.bill.Bill
+import ch.pontius.swissqr.api.basics.PostRestHandler
+import ch.pontius.swissqr.api.model.ErrorStatusException
+import ch.pontius.swissqr.api.model.Status
+import ch.pontius.swissqr.api.model.bill.Bill
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
 import net.codecrete.qrbill.generator.QRBill
@@ -64,7 +64,10 @@ class ScanQRCodeHandler : PostRestHandler {
 
         /* Report error if no result could be found. */
         if (bills.isEmpty()) {
-            throw ErrorStatusException(404, "Provided data did not contain any Swiss QR code.")
+            throw ErrorStatusException(
+                404,
+                "Provided data did not contain any Swiss QR code."
+            )
         }
 
         /* Write results to stream. */
@@ -84,13 +87,21 @@ class ScanQRCodeHandler : PostRestHandler {
                 val doc = PDDocument.load(ctx.req.inputStream)
                 val renderer = PDFRenderer(doc)
                 val numberOfPages: Int = doc.getNumberOfPages()
-                (0 until numberOfPages).map {
+                val result = (0 until numberOfPages).map {
                     renderer.renderImageWithDPI(it, 300.0f, ImageType.RGB)
                 }
+                doc.close()
+                result
             } catch (e: IOException) {
-                throw ErrorStatusException(400, "Failed to read provided PDF document due to IOException: ${e.message}")
+                throw ErrorStatusException(
+                    400,
+                    "Failed to read provided PDF document due to IOException: ${e.message}"
+                )
             }
         }
-        else -> throw ErrorStatusException(400, "Provided content type '${ctx.req.contentType} is not supported!")
+        else -> throw ErrorStatusException(
+            400,
+            "Provided content type '${ctx.req.contentType} is not supported!"
+        )
     }
 }

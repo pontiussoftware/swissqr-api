@@ -1,4 +1,4 @@
-package ch.pontius.`swissqr-api`.model.bill
+package ch.pontius.swissqr.api.model.bill
 
 import net.codecrete.qrbill.generator.Bill.*
 

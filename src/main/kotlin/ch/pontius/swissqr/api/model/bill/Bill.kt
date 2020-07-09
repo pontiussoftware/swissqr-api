@@ -1,4 +1,4 @@
-package ch.pontius.`swissqr-api`.model.bill
+package ch.pontius.swissqr.api.model.bill
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import net.codecrete.qrbill.generator.Bill
@@ -43,13 +43,21 @@ data class Bill(
             else -> throw IllegalArgumentException("Provided reference type ${b.referenceType} is not supported.")
         },
         debtor = when(b.debtor.type) {
-            net.codecrete.qrbill.generator.Address.Type.STRUCTURED -> Address.StructuredAddress(b.debtor)
-            net.codecrete.qrbill.generator.Address.Type.COMBINED_ELEMENTS -> Address.CombinedAddress(b.debtor)
+            net.codecrete.qrbill.generator.Address.Type.STRUCTURED -> Address.StructuredAddress(
+                b.debtor
+            )
+            net.codecrete.qrbill.generator.Address.Type.COMBINED_ELEMENTS -> Address.CombinedAddress(
+                b.debtor
+            )
             else -> throw IllegalArgumentException("Provided debtor address format ${b.debtor.type} is not supported.")
         },
         creditor = when(b.creditor.type) {
-            net.codecrete.qrbill.generator.Address.Type.STRUCTURED -> Address.StructuredAddress(b.creditor)
-            net.codecrete.qrbill.generator.Address.Type.COMBINED_ELEMENTS -> Address.CombinedAddress(b.creditor)
+            net.codecrete.qrbill.generator.Address.Type.STRUCTURED -> Address.StructuredAddress(
+                b.creditor
+            )
+            net.codecrete.qrbill.generator.Address.Type.COMBINED_ELEMENTS -> Address.CombinedAddress(
+                b.creditor
+            )
             else -> throw IllegalArgumentException("Provided creditor address format ${b.creditor.type} is not supported.")
         }
     )

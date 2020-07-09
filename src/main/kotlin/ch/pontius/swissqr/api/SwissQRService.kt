@@ -1,11 +1,12 @@
-package ch.pontius.`swissqr-api`
+package ch.pontius.swissqr.api
 
-import ch.pontius.`swissqr-api`.basics.*
-import ch.pontius.`swissqr-api`.handlers.GenerateQRCodeHandler
-import ch.pontius.`swissqr-api`.handlers.GenerateQRCodeSimpleHandler
-import ch.pontius.`swissqr-api`.handlers.ScanQRCodeHandler
-import ch.pontius.`swissqr-api`.model.Role
-import ch.pontius.`swissqr-api`.model.Status
+import ch.pontius.swissqr.api.basics.*
+import ch.pontius.swissqr.api.handlers.GenerateQRCodeHandler
+import ch.pontius.swissqr.api.handlers.GenerateQRCodeSimpleHandler
+import ch.pontius.swissqr.api.handlers.ScanQRCodeHandler
+import ch.pontius.swissqr.api.model.Role
+import ch.pontius.swissqr.api.model.Status
+import ch.pontius.swissqr.api.model.service.Config
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder
 import io.javalin.apibuilder.ApiBuilder.path
@@ -14,41 +15,51 @@ import io.javalin.plugin.openapi.OpenApiOptions
 import io.javalin.plugin.openapi.OpenApiPlugin
 import io.javalin.plugin.openapi.ui.ReDocOptions
 import io.javalin.plugin.openapi.ui.SwaggerOptions
+import io.swagger.util.Json
 import io.swagger.v3.oas.models.info.Contact
 import io.swagger.v3.oas.models.info.Info
 import org.slf4j.LoggerFactory
-
+import java.io.File
+import java.io.IOException
+import kotlin.system.exitProcess
 
 /**
+ * Entry point for Swiss QR API.
  *
  * @author Ralph Gasser
  * @version 1.0
- */
-
-
-/**
- *
  */
 fun main(args: Array<String>) {
 
     val LOGGER = LoggerFactory.getLogger("ch.pontius.swissqr.service")
 
+    /* Path to config file (defaults to ./config) */
+    val configPath = args.firstOrNull() ?: "./config"
+    val config = try {
+        Json.mapper().readValue(File(configPath), Config::class.java)
+    } catch (e: IOException) {
+        LOGGER.error("Config file $configPath not found. Swiss QR API will now quit.")
+        exitProcess(1)
+    }
 
+    /* Prepare list of HTTP handlers. */
     val handlers = listOf(
         GenerateQRCodeHandler(),
         GenerateQRCodeSimpleHandler(),
         ScanQRCodeHandler()
     )
 
-    Javalin.create { config ->
-        config.registerPlugin(OpenApiPlugin(getOpenApiOptions()))
-        config.defaultContentType = "application/json"
-        config.accessManager(AccessManager)
+    /* Initialize Javalin. */
+    Javalin.create { c ->
+        c.registerPlugin(OpenApiPlugin(getOpenApiOptions()))
+        c.defaultContentType = "application/json"
+        c.accessManager(AccessManager)
+        c.enableCorsForAllOrigins()
+        c.requestLogger { ctx, f -> LOGGER.info("Request ${ctx.req.requestURI} completed in ${f}ms.")}
     }.routes {
         path("api") {
             handlers.forEach { handler ->
                 path(handler.route) {
-
                     val permittedRoles = if (handler is AccessManagedRestHandler) {
                         handler.permittedRoles
                     } else {
@@ -80,7 +91,7 @@ fun main(args: Array<String>) {
     }.exception(Exception::class.java) { e, ctx ->
         ctx.status(500).json(Status.ErrorStatus(500, "Internal server error: ${e.message}"))
         LOGGER.error("Exception during handling of request to ${ctx.path()}", e)
-    }.start(8080)
+    }.start(config.port)
 }
 
 

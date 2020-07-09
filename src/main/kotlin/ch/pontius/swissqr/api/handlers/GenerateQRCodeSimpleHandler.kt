@@ -1,12 +1,12 @@
-package ch.pontius.`swissqr-api`.handlers
+package ch.pontius.swissqr.api.handlers
 
-import ch.pontius.`swissqr-api`.basics.GetRestHandler
-import ch.pontius.`swissqr-api`.model.ErrorStatusException
-import ch.pontius.`swissqr-api`.model.Status
-import ch.pontius.`swissqr-api`.model.bill.Address
-import ch.pontius.`swissqr-api`.model.bill.Bill
-import ch.pontius.`swissqr-api`.model.bill.RefType
-import ch.pontius.`swissqr-api`.model.service.OutputFormat
+import ch.pontius.swissqr.api.basics.GetRestHandler
+import ch.pontius.swissqr.api.model.ErrorStatusException
+import ch.pontius.swissqr.api.model.Status
+import ch.pontius.swissqr.api.model.bill.Address
+import ch.pontius.swissqr.api.model.bill.Bill
+import ch.pontius.swissqr.api.model.bill.RefType
+import ch.pontius.swissqr.api.model.service.OutputFormat
 
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
@@ -67,22 +67,59 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
         }
 
         val bill = Bill(
-            account = ctx.queryParam("account") ?: throw ErrorStatusException(400, "Account is required in order to generate QR invoice."),
-            amount = BigDecimal(ctx.queryParam("amount") ?: throw ErrorStatusException(400, "Amount is required in order to generate QR invoice.")),
-            currency = ctx.queryParam("currency") ?: throw ErrorStatusException(400, "Currency is required in order to generate QR invoice."),
+            account = ctx.queryParam("account")
+                ?: throw ErrorStatusException(
+                    400,
+                    "Account is required in order to generate QR invoice."
+                ),
+            amount = BigDecimal(
+                ctx.queryParam("amount") ?: throw ErrorStatusException(
+                    400,
+                    "Amount is required in order to generate QR invoice."
+                )
+            ),
+            currency = ctx.queryParam("currency")
+                ?: throw ErrorStatusException(
+                    400,
+                    "Currency is required in order to generate QR invoice."
+                ),
             message = ctx.queryParam("message"),
             billInformation = ctx.queryParam("billInformation"),
             reference = ctx.queryParam("reference"),
             debtor = Address.CombinedAddress(
-                name = ctx.queryParam("debtor_name") ?: throw ErrorStatusException(400, "Debtor name is required in order to generate QR invoice."),
-                countryCode = ctx.queryParam("debtor_country_code") ?: throw ErrorStatusException(400, "Debtor country code is required in order to generate QR invoice."),
-                addressLine1 = ctx.queryParam("debtor_address_line_1") ?: throw ErrorStatusException(400, "Debtor address line is required in order to generate QR invoice."),
+                name = ctx.queryParam("debtor_name")
+                    ?: throw ErrorStatusException(
+                        400,
+                        "Debtor name is required in order to generate QR invoice."
+                    ),
+                countryCode = ctx.queryParam("debtor_country_code")
+                    ?: throw ErrorStatusException(
+                        400,
+                        "Debtor country code is required in order to generate QR invoice."
+                    ),
+                addressLine1 = ctx.queryParam("debtor_address_line_1")
+                    ?: throw ErrorStatusException(
+                        400,
+                        "Debtor address line is required in order to generate QR invoice."
+                    ),
                 addressLine2 = ctx.queryParam("debtor_address_line_2")
             ),
             creditor = Address.CombinedAddress(
-                name = ctx.queryParam("creditor_name") ?: throw ErrorStatusException(400, "Creditor name is required in order to generate QR invoice."),
-                countryCode = ctx.queryParam("creditor_country_code") ?: throw ErrorStatusException(400, "Creditor country code is required in order to generate QR invoice."),
-                addressLine1 = ctx.queryParam("creditor_address_line_1") ?: throw ErrorStatusException(400, "Creditor address line is required in order to generate QR invoice."),
+                name = ctx.queryParam("creditor_name")
+                    ?: throw ErrorStatusException(
+                        400,
+                        "Creditor name is required in order to generate QR invoice."
+                    ),
+                countryCode = ctx.queryParam("creditor_country_code")
+                    ?: throw ErrorStatusException(
+                        400,
+                        "Creditor country code is required in order to generate QR invoice."
+                    ),
+                addressLine1 = ctx.queryParam("creditor_address_line_1")
+                    ?: throw ErrorStatusException(
+                        400,
+                        "Creditor address line is required in order to generate QR invoice."
+                    ),
                 addressLine2 = ctx.queryParam("creditor_address_line_2")
             ),
             referenceType = refType
@@ -112,7 +149,10 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
         /* Validate QR bill. */
         val validation = QRBill.validate(bill)
         if (!validation.isValid) {
-            throw ErrorStatusException(400, "Specified bill is not valid: ${validation.validationMessages.joinToString("\n\n") { it.messageKey }}")
+            throw ErrorStatusException(
+                400,
+                "Specified bill is not valid: ${validation.validationMessages.joinToString("\n\n") { it.messageKey }}"
+            )
         }
 
        /* Generate QR code. */

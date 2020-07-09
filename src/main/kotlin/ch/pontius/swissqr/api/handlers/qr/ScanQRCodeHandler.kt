@@ -1,12 +1,12 @@
-package ch.pontius.swissqr.api.handlers
+package ch.pontius.swissqr.api.handlers.qr
 
 import boofcv.factory.fiducial.FactoryFiducial
 import boofcv.io.image.ConvertBufferedImage
 import boofcv.struct.image.GrayU8
 import ch.pontius.swissqr.api.basics.PostRestHandler
-import ch.pontius.swissqr.api.model.ErrorStatusException
-import ch.pontius.swissqr.api.model.Status
-import ch.pontius.swissqr.api.model.bill.Bill
+import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
+import ch.pontius.swissqr.api.model.service.status.Status
+import ch.pontius.swissqr.api.model.service.bill.Bill
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
 import net.codecrete.qrbill.generator.QRBill
@@ -17,7 +17,6 @@ import org.apache.pdfbox.rendering.PDFRenderer
 import java.awt.image.BufferedImage
 import java.io.IOException
 import javax.imageio.ImageIO
-
 
 /**
  * Javalin handler that scans QR codes from PDFs or images, reads their data and returns a list [Bill] data structures.

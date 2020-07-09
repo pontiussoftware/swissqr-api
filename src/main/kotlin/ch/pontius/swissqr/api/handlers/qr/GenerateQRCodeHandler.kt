@@ -1,9 +1,9 @@
-package ch.pontius.swissqr.api.handlers
+package ch.pontius.swissqr.api.handlers.qr
 
 import ch.pontius.swissqr.api.basics.PostRestHandler
-import ch.pontius.swissqr.api.model.ErrorStatusException
-import ch.pontius.swissqr.api.model.Status
-import ch.pontius.swissqr.api.model.bill.Bill
+import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
+import ch.pontius.swissqr.api.model.service.status.Status
+import ch.pontius.swissqr.api.model.service.bill.Bill
 import ch.pontius.swissqr.api.model.service.FileFormat
 import ch.pontius.swissqr.api.model.service.OutputFormat
 import io.javalin.http.BadRequestResponse

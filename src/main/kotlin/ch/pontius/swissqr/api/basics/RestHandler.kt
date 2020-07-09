@@ -1,7 +1,7 @@
 package ch.pontius.swissqr.api.basics
 
 import ch.pontius.swissqr.api.extensions.errorResponse
-import ch.pontius.swissqr.api.model.ErrorStatusException
+import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import io.javalin.core.security.Role
 import io.javalin.http.Context
 

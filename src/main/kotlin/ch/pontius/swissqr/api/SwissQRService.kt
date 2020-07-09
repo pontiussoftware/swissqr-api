@@ -1,12 +1,12 @@
 package ch.pontius.swissqr.api
 
 import ch.pontius.swissqr.api.basics.*
-import ch.pontius.swissqr.api.handlers.GenerateQRCodeHandler
-import ch.pontius.swissqr.api.handlers.GenerateQRCodeSimpleHandler
-import ch.pontius.swissqr.api.handlers.ScanQRCodeHandler
-import ch.pontius.swissqr.api.model.Role
-import ch.pontius.swissqr.api.model.Status
-import ch.pontius.swissqr.api.model.service.Config
+import ch.pontius.swissqr.api.handlers.qr.GenerateQRCodeHandler
+import ch.pontius.swissqr.api.handlers.qr.GenerateQRCodeSimpleHandler
+import ch.pontius.swissqr.api.handlers.qr.ScanQRCodeHandler
+import ch.pontius.swissqr.api.model.users.Role
+import ch.pontius.swissqr.api.model.service.status.Status
+import ch.pontius.swissqr.api.model.Config
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder
 import io.javalin.apibuilder.ApiBuilder.path

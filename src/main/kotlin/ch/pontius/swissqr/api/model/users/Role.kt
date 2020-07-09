@@ -1,4 +1,4 @@
-package ch.pontius.swissqr.api.model
+package ch.pontius.swissqr.api.model.users
 
 import io.javalin.core.security.Role
 
@@ -8,4 +8,8 @@ import io.javalin.core.security.Role
  * @author Ralph Gasser
  * @version 1.0
  */
-enum class Role: Role { GUEST, USER, ADMIN }
+enum class Role: Role {
+    GUEST,
+    USER,
+    ADMIN
+}

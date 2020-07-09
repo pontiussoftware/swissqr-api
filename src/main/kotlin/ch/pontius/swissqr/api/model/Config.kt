@@ -1,4 +1,4 @@
-package ch.pontius.swissqr.api.model.service
+package ch.pontius.swissqr.api.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -9,5 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
  * @version 1.0
  */
 data class Config(
-    @JsonProperty("port")  val port: Int
+    @JsonProperty("port") val port: Int,
+    @JsonProperty("data") val data: String
 )

@@ -19,6 +19,12 @@ dependencies {
     ///// BoofCV
     compile group: 'org.boofcv', name: 'boofcv-all', version: '0.36'
 
+    ///// Map DB
+    compile group: 'org.mapdb', name: 'mapdb', version: '3.0.8'
+
+    ////// BCrypt
+    compile group: 'org.mindrot', name: 'jbcrypt', version: '0.4'
+
     ///// PDFBox
     compile group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.20'
     compile group: 'org.apache.pdfbox', name: 'fontbox', version: '2.0.20'

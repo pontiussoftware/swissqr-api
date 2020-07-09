@@ -1,11 +1,11 @@
-package ch.pontius.swissqr.api.handlers
+package ch.pontius.swissqr.api.handlers.qr
 
 import ch.pontius.swissqr.api.basics.GetRestHandler
-import ch.pontius.swissqr.api.model.ErrorStatusException
-import ch.pontius.swissqr.api.model.Status
-import ch.pontius.swissqr.api.model.bill.Address
-import ch.pontius.swissqr.api.model.bill.Bill
-import ch.pontius.swissqr.api.model.bill.RefType
+import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
+import ch.pontius.swissqr.api.model.service.status.Status
+import ch.pontius.swissqr.api.model.service.bill.Address
+import ch.pontius.swissqr.api.model.service.bill.Bill
+import ch.pontius.swissqr.api.model.service.bill.RefType
 import ch.pontius.swissqr.api.model.service.OutputFormat
 
 import io.javalin.http.Context
@@ -16,7 +16,6 @@ import net.codecrete.qrbill.generator.OutputSize
 import net.codecrete.qrbill.generator.QRBill
 
 import java.math.BigDecimal
-
 
 /**
  * Javalin handler that acts as a simple swiss QR code generator that can be used via HTTP GET. Its functionality is

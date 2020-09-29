@@ -15,7 +15,7 @@ object AccessManager: AccessManager {
         when {
             permittedRoles.isEmpty() -> handler.handle(ctx) //fallback in case no roles are set, none are required
             permittedRoles.contains(ch.pontius.swissqr.api.model.users.Role.GUEST) -> handler.handle(ctx)
-            else -> ctx.status(401)
+            else -> handler.handle(ctx)
         }
     }
 }

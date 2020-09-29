@@ -53,6 +53,7 @@ fun main(args: Array<String>) {
     Javalin.create { c ->
         c.registerPlugin(OpenApiPlugin(getOpenApiOptions()))
         c.defaultContentType = "application/json"
+        c.accessManager(AccessManager)
         c.enableCorsForAllOrigins()
         c.requestLogger { ctx, f -> LOGGER.info("Request ${ctx.req.requestURI} completed in ${f}ms.")}
     }.routes {

@@ -36,7 +36,7 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
             OpenApiParam("resolution", Int::class, "Resolution of the resulting QR code in dpi. Default ist 150.")
         ],
         queryParams = [
-            OpenApiParam("amount", Number::class, "Amount to be printed on the invoice.", required = true),
+            OpenApiParam("amount", Double::class, "Amount to be printed on the invoice.", required = true),
             OpenApiParam("account", String::class, "Account number to be printed on the invoice.", required = true),
             OpenApiParam("currency", String::class, "Currency of the amount printed on the invoice.", required = true),
             OpenApiParam("message", String::class, "Message to be printed on the invoice."),

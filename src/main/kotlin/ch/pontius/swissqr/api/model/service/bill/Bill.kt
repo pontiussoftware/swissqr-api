@@ -20,10 +20,8 @@ data class Bill(
     @JsonProperty("debtor") val debtor: Address,
     @JsonProperty("message") val message: String? = null,
     @JsonProperty("billInformation")  val billInformation: String? = null,
-    @JsonProperty("reference")  val reference: String? = null,
-    @JsonProperty("referenceType") val referenceType: RefType = RefType.NO_REF
+    @JsonProperty("reference")  val reference: String? = null
 ) {
-
     /**
      * Constructor to convert [net.codecrete.qrbill.generator.Bill] to [Bill].
      *
@@ -35,13 +33,7 @@ data class Bill(
         account = b.account,
         message = b.unstructuredMessage,
         billInformation = b.billInformation,
-        reference =  b.reference,
-        referenceType = when(b.referenceType) {
-            Bill.REFERENCE_TYPE_NO_REF -> RefType.NO_REF
-            Bill.REFERENCE_TYPE_QR_REF -> RefType.QR_REF
-            Bill.REFERENCE_TYPE_CRED_REF -> RefType.CRED_REF
-            else -> throw IllegalArgumentException("Provided reference type ${b.referenceType} is not supported.")
-        },
+        reference = b.reference,
         debtor = when(b.debtor.type) {
             net.codecrete.qrbill.generator.Address.Type.STRUCTURED -> Address.StructuredAddress(
                 b.debtor
@@ -77,7 +69,7 @@ data class Bill(
         bill.unstructuredMessage = this.message
         bill.billInformation = this.billInformation
         bill.reference = this.reference
-        bill.referenceType = this.referenceType.value
+        bill.updateReferenceType()
         return bill
     }
 }

@@ -4,13 +4,13 @@ import ch.pontius.swissqr.api.basics.PostRestHandler
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.service.bill.Bill
-import ch.pontius.swissqr.api.model.service.FileFormat
-import ch.pontius.swissqr.api.model.service.OutputFormat
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
 import net.codecrete.qrbill.canvas.PDFCanvas
 import net.codecrete.qrbill.canvas.PNGCanvas
+import net.codecrete.qrbill.generator.GraphicsFormat
+import net.codecrete.qrbill.generator.Language
 import net.codecrete.qrbill.generator.OutputSize
 import net.codecrete.qrbill.generator.QRBill
 
@@ -22,18 +22,21 @@ import net.codecrete.qrbill.generator.QRBill
  * @version 1.0
  */
 class GenerateQRCodeHandler : PostRestHandler {
-    override val route: String = "qr/generate/:type/:format/:width/:height/:resolution"
+    override val route: String = "qr/generate/:type"
 
     @OpenApi(
         summary = "Generates a new QR code with the given information",
-        path = "/api/qr/generate/:type/:format/:width/:height/:resolution",
+        path = "/api/qr/generate/:type",
         method = HttpMethod.POST,
         pathParams = [
-            OpenApiParam("type", String::class, "Type of generated invoice. Can either be A4, QR_BILL or QR_ONLY. Defaults to QR_BILL"),
-            OpenApiParam("format", String::class, "File format of the resulting QR code (PNG, PDF or SVG)."),
-            OpenApiParam("width", Double::class, "Width of the resulting QR code in mm."),
-            OpenApiParam("height", Double::class, "Height of the resulting QR code in mm."),
-            OpenApiParam("resolution", Int::class, "Resolution of the resulting QR code in mm.")
+            OpenApiParam("type", String::class, "Type of generated invoice. Can either be A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_BILL_WITH_HORIZONTAL_LINE or QR_CODE_ONLY."),
+        ],
+        queryParams = [
+            OpenApiParam("format", String::class, "File format of the resulting QR code (PNG, PDF or SVG). Defaults to PNG."),
+            OpenApiParam("width", Double::class, "Width of the resulting QR code in mm. Default depending on type."),
+            OpenApiParam("height", Double::class, "Height of the resulting QR code in mm. Default depending on type."),
+            OpenApiParam("resolution", Int::class, "Resolution of the resulting QR code in mm. Defaults to 150."),
+            OpenApiParam("language", String::class, "Language of the generated bill. Options are DE, FR, IT or EN. Defaults to EN.")
         ],
         requestBody = OpenApiRequestBody([OpenApiContent(Bill::class)]),
         tags = ["QR Generator"],
@@ -49,69 +52,67 @@ class GenerateQRCodeHandler : PostRestHandler {
         val bill = try {
             ctx.bodyAsClass(Bill::class.java).toProcessableBill()
         } catch (e: BadRequestResponse){
-            throw ErrorStatusException(
-                400,
-                "HTTP body could not be parsed into a valid QR invoice model!"
-            )
+            throw ErrorStatusException(400, "HTTP body could not be parsed into a valid QR invoice model!")
         }
 
         /* Extract and validate format parameters. */
-        val type = OutputFormat.valueOf(ctx.pathParamMap().getOrDefault("type", "QR_BILL"))
-        when (type) {
-            OutputFormat.A4 -> bill.format.outputSize = OutputSize.A4_PORTRAIT_SHEET
-            OutputFormat.QR_BILL -> bill.format.outputSize = OutputSize.QR_BILL_ONLY
-            OutputFormat.QR_ONLY -> bill.format.outputSize = OutputSize.QR_CODE_ONLY
+        try {
+            bill.format.outputSize = OutputSize.valueOf(ctx.pathParamMap().getOrDefault("type", "QR_BILL_ONLY").toUpperCase())
+        } catch (e: IllegalArgumentException) {
+            throw ErrorStatusException(400, "Illegal value for parameter 'type'. Possible values are A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_BILL_WITH_HORIZONTAL_LINE or QR_CODE_ONLY!")
         }
 
-        val width = ctx.pathParamMap()["width"]?.toDoubleOrNull() ?: when(type) {
-            OutputFormat.A4 -> 210.0
-            OutputFormat.QR_BILL -> 210.0
-            OutputFormat.QR_ONLY -> 46.0
+        try {
+            bill.format.language = Language.valueOf(ctx.queryParam("language", "EN")!!.toUpperCase())
+        } catch (e: IllegalArgumentException) {
+            throw ErrorStatusException(400, "Illegal value for parameter 'language'. Possible values are DE, FR, IT or EN!")
         }
-        val height = ctx.pathParamMap()["height"]?.toDoubleOrNull() ?: when(type) {
-            OutputFormat.A4 -> 297.0
-            OutputFormat.QR_BILL -> 105.0
-            OutputFormat.QR_ONLY -> 46.0
+
+        val width = ctx.queryParam("width")?.toDoubleOrNull() ?: when(bill.format.outputSize) {
+            OutputSize.A4_PORTRAIT_SHEET -> 210.0
+            OutputSize.QR_BILL_ONLY -> 210.0
+            OutputSize.QR_BILL_WITH_HORIZONTAL_LINE -> 210.0
+            OutputSize.QR_CODE_ONLY -> 46.0
         }
-        val resolution = ctx.pathParamMap()["resolution"]?.toIntOrNull() ?: 150
+        val height = ctx.queryParam("height")?.toDoubleOrNull() ?: when(bill.format.outputSize) {
+            OutputSize.A4_PORTRAIT_SHEET -> 297.0
+            OutputSize.QR_BILL_WITH_HORIZONTAL_LINE -> 110.0
+            OutputSize.QR_BILL_ONLY -> 105.0
+            OutputSize.QR_CODE_ONLY -> 46.0
+        }
+        val resolution = ctx.queryParam("resolution")?.toIntOrNull() ?: 150
 
         if (width < 0.0 || height < 0.0) {
-            throw ErrorStatusException(
-                400,
-                "Specified format is invalid: Width and height must be greater than zero."
-            )
+            throw ErrorStatusException(400, "Specified format is invalid: Width and height must be greater than zero.")
         }
         if (resolution < 144 || resolution >= 600) {
-            throw ErrorStatusException(
-                400,
-                "Specified format is invalid: Resolution but be between 144 and 600dpi must be greater than zero."
-            )
+            throw ErrorStatusException(400, "Specified format is invalid: Resolution but be between 144 and 600dpi must be greater than zero.")
         }
 
         /* Validate QR bill. */
         val validation = QRBill.validate(bill)
         if (!validation.isValid) {
-            throw ErrorStatusException(
-                400,
-                "Specified bill is not valid: ${validation.validationMessages.joinToString("\n\n") { it.messageKey }}"
-            )
+            throw ErrorStatusException(400, "Specified bill is not valid: ${validation.validationMessages.joinToString("\n\n") { it.messageKey }}")
         }
 
         /* Generate QR code. */
-        val data = when(FileFormat.valueOf(ctx.pathParamMap().getOrDefault("format", "PNG"))) {
-            FileFormat.PNG -> {
+        val data = when(GraphicsFormat.valueOf(ctx.queryParam("format", "PNG")!!.toUpperCase())) {
+            GraphicsFormat.PNG -> {
+                bill.format.graphicsFormat = GraphicsFormat.PNG
                 val canvas = PNGCanvas(width, height, resolution, "Arial, Helvetica, sans-serif")
                 QRBill.draw(bill, canvas)
                 ctx.contentType("image/png")
                 canvas.toByteArray()
             }
-            FileFormat.PDF -> {
+            GraphicsFormat.PDF -> {
+                bill.format.graphicsFormat = GraphicsFormat.PDF
                 val canvas = PDFCanvas(width, height)
                 QRBill.draw(bill, canvas)
                 ctx.contentType("application/pdf")
                 canvas.toByteArray()
             }
-            FileFormat.SVG -> {
+            GraphicsFormat.SVG -> {
+                bill.format.graphicsFormat = GraphicsFormat.SVG
                 ctx.contentType("image/svg")
                 QRBill.generate(bill)
             }

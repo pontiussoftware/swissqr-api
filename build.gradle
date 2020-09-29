@@ -39,8 +39,8 @@ dependencies {
     compile group: 'org.mindrot', name: 'jbcrypt', version: '0.4'
 
     ///// PDFBox
-    compile group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.20'
-    compile group: 'org.apache.pdfbox', name: 'fontbox', version: '2.0.20'
+    compile group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.21'
+    compile group: 'org.apache.pdfbox', name: 'fontbox', version: '2.0.21'
 
     ////// Log4j
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.1'

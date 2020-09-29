@@ -33,13 +33,13 @@ fun main(args: Array<String>) {
 
     val LOGGER = LoggerFactory.getLogger("ch.pontius.swissqr.service")
 
-    /* Path to config file (defaults to ./config) */
-    val configPath = args.firstOrNull() ?: "./config"
+    /* Path to config file (defaults to ./config.json) */
+    val configPath = args.firstOrNull() ?: "./config.json"
     val config = try {
         Json.mapper().readValue(File(configPath), Config::class.java)
     } catch (e: IOException) {
-        LOGGER.error("Config file $configPath not found. Swiss QR API will now quit.")
-        exitProcess(1)
+        LOGGER.error("Config file $configPath not found. Fallback to default config.")
+        Config()
     }
 
     /* Prepare list of HTTP handlers. */

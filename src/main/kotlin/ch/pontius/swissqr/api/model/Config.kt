@@ -9,6 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
  * @version 1.0
  */
 data class Config(
-    @JsonProperty("port") val port: Int,
-    @JsonProperty("data") val data: String
+    @JsonProperty("port") val port: Int = 8080,
+    @JsonProperty("data") val data: String = "./data"
 )

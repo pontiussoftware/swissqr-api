@@ -1,7 +1,7 @@
 # Default ignored files
 .gradle
 .idea
-.build
+build
 
 # Java class files and jars
 *.class

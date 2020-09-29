@@ -13,7 +13,6 @@ import io.javalin.apibuilder.ApiBuilder.path
 import io.javalin.core.security.SecurityUtil
 import io.javalin.plugin.openapi.OpenApiOptions
 import io.javalin.plugin.openapi.OpenApiPlugin
-import io.javalin.plugin.openapi.ui.ReDocOptions
 import io.javalin.plugin.openapi.ui.SwaggerOptions
 import io.swagger.util.Json
 import io.swagger.v3.oas.models.info.Contact
@@ -21,7 +20,6 @@ import io.swagger.v3.oas.models.info.Info
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
-import kotlin.system.exitProcess
 
 /**
  * Entry point for Swiss QR API.
@@ -31,7 +29,7 @@ import kotlin.system.exitProcess
  */
 fun main(args: Array<String>) {
 
-    val LOGGER = LoggerFactory.getLogger("ch.pontius.swissqr.service")
+    val LOGGER = LoggerFactory.getLogger("ch.pontius.swissqr.api.Main")
 
     /* Path to config file (defaults to ./config.json) */
     val configPath = args.firstOrNull() ?: "./config.json"

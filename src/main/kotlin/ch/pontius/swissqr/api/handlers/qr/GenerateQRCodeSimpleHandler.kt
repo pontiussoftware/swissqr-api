@@ -27,7 +27,7 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
     override val route: String = "qr/simple/:type"
 
     @OpenApi(
-        summary = "Generates a new QR code with the given information",
+        summary = "Generates a new QR code with the information provided via GET.",
         path = "/api/qr/simple/:type",
         method = HttpMethod.GET,
         pathParams = [

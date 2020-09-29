@@ -61,8 +61,10 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
     override fun doGet(ctx: Context) {
 
         /* Extract invoice data. */
-        val refType = when(ctx.queryParam("reference")) {
-            null -> RefType.NO_REF
+        val refTypeString = ctx.queryParam("reference")
+        val refType = when {
+            refTypeString == null -> RefType.NO_REF
+            refTypeString.startsWith("RF") -> RefType.CRED_REF
             else -> RefType.QR_REF
         }
 

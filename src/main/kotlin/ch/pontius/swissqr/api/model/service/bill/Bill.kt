@@ -73,7 +73,7 @@ data class Bill(
         bill.account = this.account
         bill.amount = this.amount
         bill.creditor = this.creditor.toProcessableAddress()
-        bill.debtor = this.creditor.toProcessableAddress()
+        bill.debtor = this.debtor.toProcessableAddress()
         bill.unstructuredMessage = this.message
         bill.billInformation = this.billInformation
         bill.reference = this.reference

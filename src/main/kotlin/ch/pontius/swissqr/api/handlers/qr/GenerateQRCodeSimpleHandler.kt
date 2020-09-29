@@ -32,22 +32,22 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
         path = "/api/qr/simple/:type/:resolution",
         method = HttpMethod.GET,
         pathParams = [
-            OpenApiParam("type", String::class, "Type of generated invoice. Can either be A4, QR_BILL or QR_ONLY. Defaults to QR_BILL"),
-            OpenApiParam("resolution", Int::class, "Resolution of the resulting QR code in mm.")
+            OpenApiParam("type", String::class, "Type of generated invoice. Can either be A4, QR_BILL or QR_ONLY."),
+            OpenApiParam("resolution", Int::class, "Resolution of the resulting QR code in dpi. Default ist 150.")
         ],
         queryParams = [
-            OpenApiParam("amount", BigDecimal::class, "Amount to be printed on the invoice."),
-            OpenApiParam("account", String::class, "Account number to be printed on the invoice."),
-            OpenApiParam("currency", String::class, "Currency of the amount printed on the invoice."),
+            OpenApiParam("amount", Number::class, "Amount to be printed on the invoice.", required = true),
+            OpenApiParam("account", String::class, "Account number to be printed on the invoice.", required = true),
+            OpenApiParam("currency", String::class, "Currency of the amount printed on the invoice.", required = true),
             OpenApiParam("message", String::class, "Message to be printed on the invoice."),
             OpenApiParam("billInformation", String::class, "Bill information to be printed on the invoice."),
             OpenApiParam("reference", String::class, "Currency of the amount printed on the invoice"),
-            OpenApiParam("debtor_name", String::class, "Name of the debtor to be printed on the invoice"),
-            OpenApiParam("debtor_country_code", String::class, "Country of the debtor to be printed on the invoice"),
+            OpenApiParam("debtor_name", String::class, "Name of the debtor to be printed on the invoice", required = true),
+            OpenApiParam("debtor_country_code", String::class, "Country of the debtor to be printed on the invoice", required = true),
             OpenApiParam("debtor_address_line_1", String::class, "Address line 1 of the debtor to be printed on the invoice"),
             OpenApiParam("debtor_address_line_2", String::class, "Address line 2 of the debtor to be printed on the invoice"),
-            OpenApiParam("creditor_name", String::class, "Name of the creditor to be printed on the invoice"),
-            OpenApiParam("creditor_country_code", String::class, "Country of the creditor to be printed on the invoice"),
+            OpenApiParam("creditor_name", String::class, "Name of the creditor to be printed on the invoice", required = true),
+            OpenApiParam("creditor_country_code", String::class, "Country of the creditor to be printed on the invoice", required = true),
             OpenApiParam("creditor_address_line_1", String::class, "Address line 1 of the creditor to be printed on the invoice"),
             OpenApiParam("creditor_address_line_2", String::class, "Address line 2 of the creditor to be printed on the invoice")
         ],

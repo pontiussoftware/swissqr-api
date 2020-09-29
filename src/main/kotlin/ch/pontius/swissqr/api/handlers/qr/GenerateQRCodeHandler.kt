@@ -109,7 +109,8 @@ class GenerateQRCodeHandler : PostRestHandler {
                 val canvas = PDFCanvas(width, height)
                 QRBill.draw(bill, canvas)
                 ctx.contentType("application/pdf")
-                canvas.toByteArray()            }
+                canvas.toByteArray()
+            }
             FileFormat.SVG -> {
                 ctx.contentType("image/svg")
                 QRBill.generate(bill)

@@ -29,9 +29,10 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
 
     @OpenApi(
         summary = "Generates a new QR code with the given information",
-        path = "/api/qr/simple/:type/:resolution", method = HttpMethod.GET,
+        path = "/api/qr/simple/:type/:resolution",
+        method = HttpMethod.GET,
         pathParams = [
-            OpenApiParam("type", OutputFormat::class, "Type of generated invoice. Can either be A4, QR_BILL or QR_ONLY. Defaults to QR_BILL"),
+            OpenApiParam("type", String::class, "Type of generated invoice. Can either be A4, QR_BILL or QR_ONLY. Defaults to QR_BILL"),
             OpenApiParam("resolution", Int::class, "Resolution of the resulting QR code in mm.")
         ],
         queryParams = [
@@ -50,7 +51,7 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
             OpenApiParam("creditor_address_line_1", String::class, "Address line 1 of the creditor to be printed on the invoice"),
             OpenApiParam("creditor_address_line_2", String::class, "Address line 2 of the creditor to be printed on the invoice")
         ],
-        tags = ["QR generator"],
+        tags = ["QR Generator"],
         responses = [
             OpenApiResponse("200", [OpenApiContent(ByteArray::class)]),
             OpenApiResponse("400", [OpenApiContent(Status.ErrorStatus::class)]),

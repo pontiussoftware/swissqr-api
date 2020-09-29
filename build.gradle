@@ -26,8 +26,8 @@ repositories {
 
 dependencies {
     ///// Javalin
-    compile group: 'io.javalin', name: 'javalin', version: '3.9.1+'
-    compile group: 'io.javalin', name: 'javalin-openapi', version: '3.9.1+'
+    compile group: 'io.javalin', name: 'javalin', version: '3.10.0+'
+    compile group: 'io.javalin', name: 'javalin-openapi', version: '3.10.0+'
 
     ///// BoofCV
     compile group: 'org.boofcv', name: 'boofcv-all', version: '0.36'

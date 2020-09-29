@@ -31,13 +31,14 @@ class ScanQRCodeHandler : PostRestHandler {
 
     @OpenApi(
         summary = "Scans a swiss QR code with the given information and returns the data it contains.",
-        path = "/api/qr/scan", method = HttpMethod.POST,
-        requestBody = OpenApiRequestBody([
+        path = "/api/qr/scan",
+        method = HttpMethod.POST,
+        requestBody = OpenApiRequestBody(content = [
             OpenApiContent(from = ByteArray::class, type = "image/png"),
             OpenApiContent(from = ByteArray::class, type = "image/jpg"),
             OpenApiContent(from = ByteArray::class, type = "application/pdf")
         ]),
-        tags = ["QR scanner"],
+        tags = ["QR Scanner"],
         responses = [
             OpenApiResponse("200", [OpenApiContent(Array<Bill>::class)]),
             OpenApiResponse("400", [OpenApiContent(Status.ErrorStatus::class)]),

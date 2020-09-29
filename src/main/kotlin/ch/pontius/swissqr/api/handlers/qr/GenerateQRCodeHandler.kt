@@ -26,23 +26,23 @@ class GenerateQRCodeHandler : PostRestHandler {
 
     @OpenApi(
         summary = "Generates a new QR code with the given information",
-        path = "/api/qr/generate/:type/:format/:width/:height/:resolution", method = HttpMethod.POST,
+        path = "/api/qr/generate/:type/:format/:width/:height/:resolution",
+        method = HttpMethod.POST,
         pathParams = [
-            OpenApiParam("type", OutputFormat::class, "Type of generated invoice. Can either be A4, QR_BILL or QR_ONLY. Defaults to QR_BILL"),
-            OpenApiParam("format", FileFormat::class, "File format of the resulting QR code (PNG, PDF or SVG)."),
+            OpenApiParam("type", String::class, "Type of generated invoice. Can either be A4, QR_BILL or QR_ONLY. Defaults to QR_BILL"),
+            OpenApiParam("format", String::class, "File format of the resulting QR code (PNG, PDF or SVG)."),
             OpenApiParam("width", Double::class, "Width of the resulting QR code in mm."),
             OpenApiParam("height", Double::class, "Height of the resulting QR code in mm."),
             OpenApiParam("resolution", Int::class, "Resolution of the resulting QR code in mm.")
         ],
         requestBody = OpenApiRequestBody([OpenApiContent(Bill::class)]),
-        tags = ["QR generator"],
+        tags = ["QR Generator"],
         responses = [
             OpenApiResponse("200", [OpenApiContent(ByteArray::class)]),
             OpenApiResponse("400", [OpenApiContent(Status.ErrorStatus::class)]),
             OpenApiResponse("401", [OpenApiContent(Status.ErrorStatus::class)])
         ]
     )
-
     override fun doPost(ctx: Context) {
 
         /* Extract invoice data. */

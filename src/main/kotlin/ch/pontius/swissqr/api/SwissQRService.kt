@@ -53,7 +53,6 @@ fun main(args: Array<String>) {
     Javalin.create { c ->
         c.registerPlugin(OpenApiPlugin(getOpenApiOptions()))
         c.defaultContentType = "application/json"
-        c.accessManager(AccessManager)
         c.enableCorsForAllOrigins()
         c.requestLogger { ctx, f -> LOGGER.info("Request ${ctx.req.requestURI} completed in ${f}ms.")}
     }.routes {
@@ -109,8 +108,7 @@ private fun getOpenApiOptions(): OpenApiOptions {
 
     return OpenApiOptions(applicationInfo).apply {
         path("/swagger-docs") // endpoint for OpenAPI json
-        swagger(SwaggerOptions("/swagger-ui")) // endpoint for swagger-ui
-        reDoc(ReDocOptions("/redoc")) // endpoint for redoc
-        activateAnnotationScanningFor("ch.pontius.swissqr.handlers")
+        swagger(SwaggerOptions("/swagger-ui"))
+        activateAnnotationScanningFor("ch.pontius.swissqr.api.handlers.qr")
     }
 }

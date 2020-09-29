@@ -8,7 +8,7 @@ RUN cd /swissqr-src && \
   tar xf ../build/distributions/swissqr-bin.tar
 
 
-FROM zenika/kotlin:1.3-jdk11-slim
+FROM zenika/kotlin:1.3-jdk11
 
 RUN mkdir /data
 COPY config.json /data/

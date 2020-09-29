@@ -2,7 +2,7 @@ group 'ch.pontius'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlinVersion = '1.4.0'
+    ext.kotlinVersion = '1.4.10'
     repositories {
         jcenter()
     }

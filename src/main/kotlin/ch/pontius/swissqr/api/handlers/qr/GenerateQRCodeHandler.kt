@@ -86,7 +86,7 @@ class GenerateQRCodeHandler : PostRestHandler {
             throw ErrorStatusException(400, "Specified format is invalid: Width and height must be greater than zero.")
         }
         if (resolution < 144 || resolution >= 600) {
-            throw ErrorStatusException(400, "Specified format is invalid: Resolution but be between 144 and 600dpi must be greater than zero.")
+            throw ErrorStatusException(400, "Specified format is invalid: Resolution must be between 144 and 600dpi.")
         }
 
         /* Validate QR bill. */

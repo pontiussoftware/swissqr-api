@@ -48,7 +48,8 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
             OpenApiParam("creditor_country_code", String::class, "Country of the creditor to be printed on the invoice", required = true),
             OpenApiParam("creditor_address_line_1", String::class, "Address line 1 of the creditor to be printed on the invoice", required = true),
             OpenApiParam("creditor_address_line_2", String::class, "Address line 2 of the creditor to be printed on the invoice", required = true),
-            OpenApiParam("language", String::class, "Language of the generated bill. Options are DE, FR, IT or EN. Defaults to EN.")
+            OpenApiParam("language", String::class, "Language of the generated bill. Options are DE, FR, IT or EN. Defaults to EN."),
+            OpenApiParam("resolution", Int::class, "Resolution of the resulting image in dpi. Defaults to 150.")
         ],
         tags = ["QR Generator"],
         responses = [
@@ -145,7 +146,10 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
             OutputSize.QR_BILL_ONLY -> 105.0
             OutputSize.QR_CODE_ONLY -> 46.0
         }
-        val resolution = 300
+        val resolution = ctx.queryParam("resolution")?.toIntOrNull() ?: 150
+        if (resolution < 144 || resolution >= 600) {
+            throw ErrorStatusException(400, "Specified format is invalid: Resolution must be between 144 and 600dpi.")
+        }
 
         /* Validate QR bill. */
         val validation = QRBill.validate(bill)

@@ -10,6 +10,7 @@ import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
 
 import net.codecrete.qrbill.canvas.PNGCanvas
+import net.codecrete.qrbill.generator.GraphicsFormat
 import net.codecrete.qrbill.generator.Language
 import net.codecrete.qrbill.generator.OutputSize
 import net.codecrete.qrbill.generator.QRBill
@@ -159,6 +160,7 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
 
        /* Generate QR code. */
         val canvas = PNGCanvas(width, height, resolution, "Arial, Helvetica, sans-serif")
+        bill.format.graphicsFormat = GraphicsFormat.PNG
         QRBill.draw(bill, canvas)
         ctx.contentType("image/png")
         ctx.result(canvas.toByteArray())

@@ -12,12 +12,12 @@ import java.nio.file.Path
 import java.util.concurrent.locks.StampedLock
 
 /**
- * A simple data access object [DAO] implementation for the [Entity] objects used by Swiss QR code.
+ * A simple [MapStore] implementation used for persisting [Entity] objects mapped to a given [Id].
  *
  * @author Ralph Gasser
- * @version 1.0
+ * @version 1.0.0
  */
-class DAO<T: Entity>(path: Path, private val serializer: Serializer<T>) : Iterable<T>, AutoCloseable {
+class MapStore<T: Entity>(path: Path, private val serializer: Serializer<T>) : AutoCloseable {
 
     init {
         Files.createDirectories(path.parent)
@@ -26,13 +26,13 @@ class DAO<T: Entity>(path: Path, private val serializer: Serializer<T>) : Iterab
     /** The [DB] object used to store */
     private val db = DBMaker.fileDB(path.toFile()).transactionEnable().fileMmapEnableIfSupported().make()
 
-    /** Internal data structure used to keep track of the data held by this [DAO]. */
+    /** Internal data structure used to keep track of the data held by this [MapStore]. */
     private val data = this.db.hashMap("data", Serializer.STRING, this.serializer).counterEnable().createOrOpen()
 
-    /** Stamped lock to mediate read/write operations through this [DAO]. */
+    /** Stamped lock to mediate read/write operations through this [MapStore]. */
     private val lock: StampedLock = StampedLock()
 
-    /** Name of the entity accessed through this [DAO]. */
+    /** Name of the entity accessed through this [MapStore]. */
     val name = path.fileName.toString().replace(".db","")
 
     init {
@@ -97,7 +97,7 @@ class DAO<T: Entity>(path: Path, private val serializer: Serializer<T>) : Iterab
     }
 
     /**
-     * Appends the given values using this [DAO]
+     * Appends the given values using this [MapStore]
      *
      * @param values An iterable of the values [T] that should be appended.
      */
@@ -111,25 +111,12 @@ class DAO<T: Entity>(path: Path, private val serializer: Serializer<T>) : Iterab
     }
 
     /**
-     * Closes this [DAO].
+     * Closes this [MapStore].
      */
     override fun close() {
         if (!this.db.isClosed()) {
             this.data.close()
             this.db.close()
-        }
-    }
-
-    /**
-     * Returns an iterator over the elements of this object.
-     */
-    override fun iterator(): Iterator<T> = object : Iterator<T> {
-        override fun hasNext(): Boolean {
-            TODO("Not yet implemented")
-        }
-
-        override fun next(): T {
-            TODO("Not yet implemented")
         }
     }
 }

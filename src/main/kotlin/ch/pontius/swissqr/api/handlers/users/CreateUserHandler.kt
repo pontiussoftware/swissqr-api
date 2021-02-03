@@ -1,16 +1,14 @@
 package ch.pontius.swissqr.api.handlers.users
 
 import ch.pontius.swissqr.api.basics.PostRestHandler
-import ch.pontius.swissqr.api.db.DAO
+import ch.pontius.swissqr.api.db.MapStore
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.service.user.UserRequest
-import ch.pontius.swissqr.api.model.users.Role
 import ch.pontius.swissqr.api.model.users.User
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
-import javax.mail.Flags.Flag.USER
 
 /**
  * Handler that can be used to create a [User].
@@ -18,7 +16,7 @@ import javax.mail.Flags.Flag.USER
  * @author Ralph Gasser
  * @version 1.0
  */
-class CreateUserHandler(val dao: DAO<User>): PostRestHandler {
+class CreateUserHandler(val dao: MapStore<User>): PostRestHandler {
     override val route: String = "user/create"
 
     @OpenApi(

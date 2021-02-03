@@ -1,7 +1,7 @@
 package ch.pontius.swissqr.api.handlers.users
 
 import ch.pontius.swissqr.api.basics.GetRestHandler
-import ch.pontius.swissqr.api.db.DAO
+import ch.pontius.swissqr.api.db.MapStore
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.users.User
@@ -16,7 +16,7 @@ import io.javalin.plugin.openapi.annotations.*
  * @author Ralph Gasser
  * @version 1.0
  */
-class ConfirmUserHandler(val dao: DAO<User>): GetRestHandler {
+class ConfirmUserHandler(val dao: MapStore<User>): GetRestHandler {
     override val route: String = "user/confirm/:user/:nonce"
 
     @OpenApi(

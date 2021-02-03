@@ -1,6 +1,5 @@
 package ch.pontius.swissqr.api.db
 
-import ch.pontius.swissqr.api.model.Entity
 import ch.pontius.swissqr.api.utilities.read
 import ch.pontius.swissqr.api.utilities.write
 import org.mapdb.DB
@@ -10,22 +9,27 @@ import java.nio.file.Path
 import java.util.concurrent.locks.StampedLock
 
 /**
+ * A simple [ListStore] implementation used persisting objects to a growing list.
  *
  * @author Ralph Gasser
- * @version 1.0
+ * @version 1.0.0
  */
 class ListStore<T>(path: Path, private val serializer: Serializer<T>) : MutableIterable<T?>, AutoCloseable {
     /** The [DB] object used to store */
     private val db = DBMaker.fileDB(path.toFile()).transactionEnable().make()
 
-    /** Internal data structure used to keep track of the data held by this [DAO]. */
+    /** Internal data structure used to keep track of the data held by this [MapStore]. */
     private val data = this.db.indexTreeList("data", this.serializer).createOrOpen()
 
-    /** Stamped lock to mediate read/write operations through this [DAO]. */
+    /** Stamped lock to mediate read/write operations through this [MapStore]. */
     private val lock: StampedLock = StampedLock()
 
-    /** Name of the entity accessed through this [DAO]. */
+    /** Name of the entity accessed through this [MapStore]. */
     val name = path.fileName.toString().replace(".db", "")
+
+    init {
+        this.db.commit()
+    }
 
     /**
      * Returns the size of this [ListStore]
@@ -57,7 +61,7 @@ class ListStore<T>(path: Path, private val serializer: Serializer<T>) : MutableI
     }
 
     /**
-     * Closes this [DAO].
+     * Closes this [MapStore].
      */
     override fun close() {
         if (!this.db.isClosed()) {

@@ -14,10 +14,10 @@ import java.nio.file.Path
 class DataAccessLayer(private val basePath: Path) {
 
     /** Store for [User] objects registered with this [DataAccessLayer].*/
-    val userStore: DAO<User> = DAO(this.basePath.resolve("users.db"), User.Serializer)
+    val userStore: MapStore<User> = MapStore(this.basePath.resolve("users.db"), User.Serializer)
 
     /** Store for [Token] objects registered with this [DataAccessLayer].*/
-    val tokenStore: DAO<Token> = DAO(this.basePath.resolve("tokens.db"), Token.Serializer)
+    val tokenStore: MapStore<Token> = MapStore(this.basePath.resolve("tokens.db"), Token.Serializer)
 
     /** Log of [Access] entries for this instance of Swiss QR API.*/
     val accessLogs: ListStore<Access> = ListStore(this.basePath.resolve("logs.db"), Access.Serializer)

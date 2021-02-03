@@ -1,6 +1,6 @@
 package ch.pontius.swissqr.api.basics
 
-import ch.pontius.swissqr.api.db.DAO
+import ch.pontius.swissqr.api.db.MapStore
 import ch.pontius.swissqr.api.model.users.Token
 import ch.pontius.swissqr.api.model.users.TokenId
 import io.javalin.core.security.AccessManager
@@ -19,7 +19,7 @@ import io.javalin.http.Handler
  * @author Ralph Gasser
  * @version 1.0.0
  */
-class AccessManager(val tokenStore: DAO<Token>): AccessManager {
+class AccessManager(val tokenStore: MapStore<Token>): AccessManager {
 
     companion object {
         const val TOKEN_ATTRIBUTE = "token"

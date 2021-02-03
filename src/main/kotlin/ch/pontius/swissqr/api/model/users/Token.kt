@@ -10,12 +10,25 @@ import org.mapdb.DataOutput2
  * @author Ralph Gasser
  * @version 1.0.0
  */
-data class Token(override val id: TokenId, val userId: UserId, val active: Boolean, val roles: Array<Role>): Entity(id) {
+data class Token(override val id: TokenId, val userId: UserId, val active: Boolean, val created: Long, val roles: Array<Permission>): Entity(id) {
+
+    /**
+     * Creates a new [Token] for the given [User] with the given [Permission]s.
+     *
+     * @param user The [User] to create the [Token] for.
+     * @param roles The roles to create the [Token] with.
+     */
+    constructor(user: User, roles: Array<Permission>) : this(TokenId(), user.id, true, System.currentTimeMillis(), roles) {
+        require(user.active && user.confirmed) { "Failed to create token: User ${user.id} is inactive." }
+        require(this.roles.isNotEmpty()) { "Failed to create token: You must specify at least one role in order to create a token." }
+    }
+
     companion object Serializer: org.mapdb.Serializer<Token> {
         override fun serialize(out: DataOutput2, value: Token) {
             out.writeUTF(value.id.value)
             out.writeUTF(value.userId.value)
             out.writeBoolean(value.active)
+            out.packLong(value.created)
             out.packInt(value.roles.size)
             value.roles.forEach { out.packInt(it.ordinal) }
         }
@@ -24,8 +37,9 @@ data class Token(override val id: TokenId, val userId: UserId, val active: Boole
             TokenId(input.readUTF()),
             UserId(input.readUTF()),
             input.readBoolean(),
+            input.unpackLong(),
             Array(input.unpackInt()) {
-                Role.values()[input.unpackInt()]
+                Permission.values()[input.unpackInt()]
             }
         )
     }

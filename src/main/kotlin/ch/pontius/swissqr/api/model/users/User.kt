@@ -3,7 +3,6 @@ package ch.pontius.swissqr.api.model.users
 import ch.pontius.swissqr.api.model.Entity
 import org.mapdb.DataInput2
 import org.mapdb.DataOutput2
-import java.util.*
 import java.util.zip.CRC32
 
 /**
@@ -14,10 +13,11 @@ import java.util.zip.CRC32
  */
 data class User(
     override val id: UserId,
-    var email: String,
-    var password: Password.HashedPassword,
-    var active: Boolean,
-    var confirmed: Boolean,
+    val email: String,
+    val password: Password.HashedPassword,
+    val description: String?,
+    val active: Boolean,
+    val confirmed: Boolean,
     val created: Long
 ) : Entity(id) {
 
@@ -25,12 +25,13 @@ data class User(
      * Creates a new [User] from given user input.
      *
      * @param email The e-mail of the user. Acts as username.
-     * @param password The [Password.PlainPassword] of the user.
+     * @param password The [Password.PlainPassword] of the [User].
+     * @param description A textual description of the [User].
      * @param active Whether [User] should be active.
      * @param confirmed Whether [User] should be confirmed.
      */
-    constructor(email: String, password: Password.PlainPassword, active: Boolean, confirmed: Boolean):
-        this(UserId(), email, password.hash(), active, confirmed, System.currentTimeMillis())
+    constructor(email: String, password: Password.PlainPassword, description: String?, active: Boolean, confirmed: Boolean):
+        this(UserId(), email, password.hash(), description, active, confirmed, System.currentTimeMillis())
 
 
     /**
@@ -41,6 +42,7 @@ data class User(
             out.writeUTF(value.id.value)
             out.writeUTF(value.email)
             out.writeUTF(value.password.value)
+            out.writeUTF(value.description ?: "")
             out.writeBoolean(value.active)
             out.writeBoolean(value.confirmed)
             out.packLong(value.created)
@@ -50,6 +52,7 @@ data class User(
             UserId(input.readUTF()),
             input.readUTF(),
             Password.HashedPassword(input.readUTF()),
+            input.readUTF(),
             input.readBoolean(),
             input.readBoolean(),
             input.unpackLong()

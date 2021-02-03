@@ -11,6 +11,11 @@ import org.mindrot.jbcrypt.BCrypt
  * @see User
  */
 sealed class Password(open val value: String) {
+
+    companion object {
+        const val MIN_PASSWORD_LENGTH = 5
+    }
+
     data class PlainPassword(override val value: String): Password(value) {
         fun hash(): HashedPassword = HashedPassword(BCrypt.hashpw(this.value, BCrypt.gensalt()))
     }

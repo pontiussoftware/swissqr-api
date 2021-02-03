@@ -9,7 +9,7 @@ import java.util.*
  * @author Ralph Gasser
  * @version 1.0.0
  */
-class TokenId(override val value: String): Id {
+data class TokenId(override val value: String): Id {
 
     /**
      * Constructor for new [UserId].

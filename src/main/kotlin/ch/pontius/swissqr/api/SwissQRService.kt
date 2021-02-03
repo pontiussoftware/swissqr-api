@@ -73,7 +73,7 @@ fun main(args: Array<String>) {
                 after {
                     val token = it.attribute<Token>(AccessManager.API_KEY_PARAM)
                     if (token is Token) {
-                        dataAccessLayer.accessLogs.append(Access(token.id, it.ip(), it.method(), it.path(), it.status(), System.currentTimeMillis()))
+                        dataAccessLayer.accessLogs.append(Access(token.id, it.ip(), it.path(), it.method(), it.status(), System.currentTimeMillis()))
                     }
                 }
             }

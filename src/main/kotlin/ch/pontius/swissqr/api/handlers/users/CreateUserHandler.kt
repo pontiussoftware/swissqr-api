@@ -5,6 +5,7 @@ import ch.pontius.swissqr.api.db.MapStore
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.service.user.UserRequest
+import ch.pontius.swissqr.api.model.users.Permission
 import ch.pontius.swissqr.api.model.users.User
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
@@ -14,10 +15,11 @@ import io.javalin.plugin.openapi.annotations.*
  * Handler that can be used to create a [User].
  *
  * @author Ralph Gasser
- * @version 1.0
+ * @version 1.0.1
  */
 class CreateUserHandler(val dao: MapStore<User>): PostRestHandler {
     override val route: String = "user/create"
+    override val requiredPermissions: Set<Permission> = setOf(Permission.ADMIN)
 
     @OpenApi(
         summary = "Creates a new user.",
@@ -38,7 +40,7 @@ class CreateUserHandler(val dao: MapStore<User>): PostRestHandler {
         }
 
         /* Prepare new user object. */
-        val user = User(email = request.email, password = request.password, active = true, confirmed = false)
+        val user = User(email = request.email, password = request.password, description = "", active = true, confirmed = false)
         this.dao.update(user)
 
         /* Write success response. */

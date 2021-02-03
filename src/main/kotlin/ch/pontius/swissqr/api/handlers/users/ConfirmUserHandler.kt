@@ -4,6 +4,7 @@ import ch.pontius.swissqr.api.basics.GetRestHandler
 import ch.pontius.swissqr.api.db.MapStore
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
+import ch.pontius.swissqr.api.model.users.Permission
 import ch.pontius.swissqr.api.model.users.User
 import ch.pontius.swissqr.api.model.users.UserId
 
@@ -14,10 +15,11 @@ import io.javalin.plugin.openapi.annotations.*
  * Handler that can be used to confirm a [User] that was freshly created.
  *
  * @author Ralph Gasser
- * @version 1.0
+ * @version 1.0.1
  */
 class ConfirmUserHandler(val dao: MapStore<User>): GetRestHandler {
     override val route: String = "user/confirm/:user/:nonce"
+    override val requiredPermissions: Set<Permission> = setOf(Permission.ADMIN)
 
     @OpenApi(
         summary = "Confirms a newly created user.",
@@ -50,8 +52,7 @@ class ConfirmUserHandler(val dao: MapStore<User>): GetRestHandler {
         }
 
         /* Confirm user and store it. */
-        user.confirmed = true
-        this.dao.update(user)
+        this.dao.update(user.copy(confirmed = true))
 
         /* Write success response. */
         ctx.json(Status.SuccessStatus("User '${user.email}' created successfully."))

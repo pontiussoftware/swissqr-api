@@ -1,6 +1,7 @@
 package ch.pontius.swissqr.api
 
 import ch.pontius.swissqr.api.basics.*
+import ch.pontius.swissqr.api.cli.Cli
 import ch.pontius.swissqr.api.db.DataAccessLayer
 import ch.pontius.swissqr.api.handlers.qr.GenerateQRCodeHandler
 import ch.pontius.swissqr.api.handlers.qr.GenerateQRCodeSimpleHandler
@@ -53,7 +54,7 @@ fun main(args: Array<String>) {
     )
 
     /* Initialize Javalin. */
-    Javalin.create { c ->
+    val javalin = Javalin.create { c ->
         c.registerPlugin(OpenApiPlugin(getOpenApiOptions()))
         c.defaultContentType = "application/json"
         c.accessManager(AccessManager(dataAccessLayer.tokenStore))
@@ -100,6 +101,12 @@ fun main(args: Array<String>) {
         ctx.status(500).json(Status.ErrorStatus(500, "Internal server error: ${e.message}"))
         logger.error("Exception during handling of request to ${ctx.path()}", e)
     }.start(config.port)
+
+    /* Starts CLI loop (blocking). */
+    Cli(dataAccessLayer, config).loop()
+
+    /* Continues when CLI exits; causes Javalin will shutdown. */
+    javalin.stop()
 }
 
 

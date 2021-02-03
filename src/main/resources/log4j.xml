@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
-<log4j:configuration debug="false">
+<log4j:configuration debug="true">
 
     <appender name="console" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
@@ -9,8 +9,8 @@
     </appender>
 
     <!-- Logger for SwissQR -->
-    <logger name="ch.pontius.swissqr.api">
-        <level value="TRACE"/>
+    <logger name="ch.pontius.swissqr.api.requests">
+        <level value="DEBUG"/>
     </logger>
 
     <!-- Root logger for SwissQR-->

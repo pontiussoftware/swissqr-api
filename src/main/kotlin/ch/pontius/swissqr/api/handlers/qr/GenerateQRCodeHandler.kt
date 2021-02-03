@@ -1,9 +1,11 @@
 package ch.pontius.swissqr.api.handlers.qr
 
+import ch.pontius.swissqr.api.basics.AccessManagedRestHandler
 import ch.pontius.swissqr.api.basics.PostRestHandler
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.service.bill.Bill
+import ch.pontius.swissqr.api.model.users.Role
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
@@ -21,8 +23,12 @@ import net.codecrete.qrbill.generator.QRBill
  * @author Ralph Gasser
  * @version 1.0
  */
-class GenerateQRCodeHandler : PostRestHandler {
+class GenerateQRCodeHandler : PostRestHandler, AccessManagedRestHandler {
+    /** Path of [GenerateQRCodeSimpleHandler]. */
     override val route: String = "qr/generate/:type"
+
+    /** Set of [Role]s allowed to use [GenerateQRCodeHandler]. */
+    override val permittedRoles: Set<Role> = setOf(Role.GENERATE)
 
     @OpenApi(
         summary = "Generates a new QR code with the information provided via POST.",

@@ -3,12 +3,12 @@ package ch.pontius.swissqr.api.handlers.qr
 import boofcv.factory.fiducial.FactoryFiducial
 import boofcv.io.image.ConvertBufferedImage
 import boofcv.struct.image.GrayU8
+import ch.pontius.swissqr.api.basics.AccessManagedRestHandler
 import ch.pontius.swissqr.api.basics.PostRestHandler
-import ch.pontius.swissqr.api.db.ListStore
-import ch.pontius.swissqr.api.model.access.Access
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.service.bill.Bill
+import ch.pontius.swissqr.api.model.users.Role
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
 import net.codecrete.qrbill.generator.QRBill
@@ -21,15 +21,19 @@ import java.io.IOException
 import javax.imageio.ImageIO
 
 /**
- * Javalin handler that scans QR codes from PDFs or images, reads their data and returns a list [Bill] data structures.
+ * A Javalin handler that scans QR codes from PDFs or images, parses the encoded data and constructs a list of [Bill]
+ * data structures.
  *
  * @author Ralph Gasser
- * @version 1.0.0
+ * @version 1.0.1
  */
-class ScanQRCodeHandler : PostRestHandler {
-
+class ScanQRCodeHandler : PostRestHandler, AccessManagedRestHandler {
+    /** Path of [ScanQRCodeHandler]. */
     override val route: String
         get() = "qr/scan"
+
+    /** Set of [Role]s allowed to use [ScanQRCodeHandler]. */
+    override val permittedRoles: Set<Role> = setOf(Role.SCAN)
 
     @OpenApi(
         summary = "Scans a swiss QR code with the given information and returns the data it contains.",

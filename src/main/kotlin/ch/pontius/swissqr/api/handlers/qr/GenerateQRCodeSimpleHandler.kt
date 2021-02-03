@@ -1,10 +1,12 @@
 package ch.pontius.swissqr.api.handlers.qr
 
+import ch.pontius.swissqr.api.basics.AccessManagedRestHandler
 import ch.pontius.swissqr.api.basics.GetRestHandler
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.service.bill.Address
 import ch.pontius.swissqr.api.model.service.bill.Bill
+import ch.pontius.swissqr.api.model.users.Role
 
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
@@ -18,14 +20,20 @@ import net.codecrete.qrbill.generator.QRBill
 import java.math.BigDecimal
 
 /**
- * Javalin handler that acts as a simple swiss QR code generator that can be used via HTTP GET. Its functionality is
- * slightly reduced (e.g. it only generates PNG files and only supports unstructured address format).
+ * [GetRestHandler] that acts as a simple swiss QR code generator that can be invoked via HTTP GET.
+ *
+ * Its functionality is slightly reduced as compared to [GenerateQRCodeHandler]. For example, it only generates PNG
+ * files and only supports an unstructured address format.
  *
  * @author Ralph Gasser
- * @version 1.0
+ * @version 1.0.1
  */
-class GenerateQRCodeSimpleHandler : GetRestHandler {
+class GenerateQRCodeSimpleHandler : GetRestHandler, AccessManagedRestHandler {
+    /** Path of [GenerateQRCodeSimpleHandler]. */
     override val route: String = "qr/simple/:type"
+
+    /** Set of [Role]s allowed to use [GenerateQRCodeHandler]. */
+    override val permittedRoles: Set<Role> = setOf(Role.GENERATE)
 
     @OpenApi(
         summary = "Generates a new QR code with the information provided via GET.",

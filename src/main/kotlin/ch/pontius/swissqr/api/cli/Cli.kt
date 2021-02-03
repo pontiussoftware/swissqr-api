@@ -10,6 +10,7 @@ import com.github.ajalt.clikt.output.HelpFormatter
 import org.jline.reader.LineReaderBuilder
 import org.jline.terminal.Terminal
 import org.jline.terminal.TerminalBuilder
+import org.slf4j.Logger
 import java.io.IOException
 import java.util.ArrayList
 import java.util.regex.Pattern
@@ -71,14 +72,14 @@ class Cli(val dataAccessLayer: DataAccessLayer, val config: Config) {
             }
 
             try {
-                clikt.parse(splitLine(line))
+                this.clikt.parse(splitLine(line))
             } catch (e: Exception) {
                 when (e) {
                     is com.github.ajalt.clikt.core.NoSuchSubcommand -> println("Please enter a valid command; type help for list of commands.")
                     is com.github.ajalt.clikt.core.PrintHelpMessage -> println(e.command.getFormattedHelp())
-                    is com.github.ajalt.clikt.core.MissingParameter -> println(e.localizedMessage)
+                    is com.github.ajalt.clikt.core.MissingParameter,
                     is com.github.ajalt.clikt.core.NoSuchOption -> println(e.localizedMessage)
-                    else -> e.printStackTrace()
+                    else ->  println(e.localizedMessage)
                 }
             }
         }

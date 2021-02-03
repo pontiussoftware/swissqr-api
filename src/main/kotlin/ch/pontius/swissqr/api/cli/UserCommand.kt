@@ -37,14 +37,12 @@ class UserCommand(val userStore: MapStore<User>, val tokenStore: MapStore<Token>
     }
 
     /** List of defined aliases for this [UserCommand]. */
-    override fun aliases(): Map<String, List<String>> {
-        return mapOf(
-            "ls" to listOf("list"),
-            "remove" to listOf("delete"),
-            "drop" to listOf("delete"),
-            "add" to listOf("create")
-        )
-    }
+    override fun aliases(): Map<String, List<String>> = mapOf(
+        "ls" to listOf("list"),
+        "remove" to listOf("delete"),
+        "drop" to listOf("delete"),
+        "add" to listOf("create")
+    )
 
     /**
      * Tabulates the given [Iterable] of [User] objects.

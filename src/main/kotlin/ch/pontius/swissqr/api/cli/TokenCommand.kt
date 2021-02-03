@@ -23,15 +23,13 @@ class TokenCommand(val tokenStore: MapStore<Token>, val userStore: MapStore<User
     }
 
     /** List of defined aliases for this [UserCommand]. */
-    override fun aliases(): Map<String, List<String>> {
-        return mapOf(
-            "ls" to listOf("list"),
-            "delete" to listOf("invalidate"),
-            "remove" to listOf("invalidate"),
-            "drop" to listOf("invalidate"),
-            "add" to listOf("create")
-        )
-    }
+    override fun aliases(): Map<String, List<String>> = mapOf(
+        "ls" to listOf("list"),
+        "delete" to listOf("invalidate"),
+        "remove" to listOf("invalidate"),
+        "drop" to listOf("invalidate"),
+        "add" to listOf("create")
+    )
 
     /**
      * Tabulates the given [Iterable] of [User] objects.

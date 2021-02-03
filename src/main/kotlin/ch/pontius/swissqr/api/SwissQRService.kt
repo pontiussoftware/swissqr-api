@@ -12,13 +12,13 @@ import ch.pontius.swissqr.api.model.access.Access
 import ch.pontius.swissqr.api.model.users.Token
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder
-import io.javalin.apibuilder.ApiBuilder.after
-import io.javalin.apibuilder.ApiBuilder.path
+import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.plugin.openapi.OpenApiOptions
 import io.javalin.plugin.openapi.OpenApiPlugin
 import io.javalin.plugin.openapi.ui.SwaggerOptions
 import io.swagger.v3.oas.models.info.Contact
 import io.swagger.v3.oas.models.info.Info
+import io.swagger.v3.oas.models.info.License
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -31,7 +31,7 @@ import java.nio.file.Paths
  */
 fun main(args: Array<String>) {
 
-    val logger = LoggerFactory.getLogger("ch.pontius.swissqr.api.Main")
+    val requestLogger = LoggerFactory.getLogger("ch.pontius.swissqr.api.requests")
 
     /* Load config file and start service. */
     val configPath = Paths.get(args.firstOrNull() ?: "./config.json")
@@ -55,37 +55,38 @@ fun main(args: Array<String>) {
         c.defaultContentType = "application/json"
         c.accessManager(AccessManager(dataAccessLayer.tokenStore))
         c.enableCorsForAllOrigins()
-        c.requestLogger { ctx, f -> logger.info("Request ${ctx.req.requestURI} completed in ${f}ms.")}
+        c.requestLogger { ctx, f -> requestLogger.info("Request ${ctx.req.requestURI} completed in ${f}ms.")}
         c.server { config.server.server() }
         c.enforceSsl = config.server.sslEnforce
     }.routes {
-        path("api") {
-            path("public") {
-                handlers.forEach { handler ->
-                    path(handler.route) {
-                        when (handler) {
-                            is GetRestHandler -> ApiBuilder.get(handler::get, handler.requiredPermissions)
-                            is PostRestHandler -> ApiBuilder.post(handler::post, handler.requiredPermissions)
-                            is PatchRestHandler -> ApiBuilder.patch(handler::patch, handler.requiredPermissions)
-                            is DeleteRestHandler -> ApiBuilder.delete(handler::delete, handler.requiredPermissions)
-                        }
-                    }
-                }
-                after {
-                    val token = it.attribute<Token>(AccessManager.API_KEY_PARAM)
-                    if (token is Token) {
-                        dataAccessLayer.accessLogs.append(Access(token.id, it.ip(), it.path(), it.method(), it.status(), System.currentTimeMillis()))
+        path("public") {
+            handlers.forEach { handler ->
+                path(handler.route) {
+                    when (handler) {
+                        is GetRestHandler -> get(handler::get, handler.requiredPermissions)
+                        is PostRestHandler -> post(handler::post, handler.requiredPermissions)
+                        is PatchRestHandler -> patch(handler::patch, handler.requiredPermissions)
+                        is DeleteRestHandler -> delete(handler::delete, handler.requiredPermissions)
                     }
                 }
             }
+            after {
+                val token = it.attribute<Token>(AccessManager.API_KEY_PARAM)
+                if (token is Token) {
+                    dataAccessLayer.accessLogs.append(Access(token.id, it.ip(), it.path(), it.method(), it.status(), System.currentTimeMillis()))
+                }
+            }
+        }
+        path("internal") {
+
         }
     }.before {
-        logger.info("${it.req.method} request to ${it.path()} with params (${it.queryParamMap().map { e -> "${e.key}=${e.value}" }.joinToString()}) from ${it.req.remoteAddr}")
+        requestLogger.debug("${it.req.method} request to ${it.path()} with params (${it.queryParamMap().map { e -> "${e.key}=${e.value}" }.joinToString()}) from ${it.req.remoteAddr}")
     }.error(401) {
         it.json(Status.ErrorStatus(401, "Unauthorized request!"))
     }.exception(Exception::class.java) { e, ctx ->
         ctx.status(500).json(Status.ErrorStatus(500, "Internal server error: ${e.message}"))
-        logger.error("Exception during handling of request to ${ctx.path()}", e)
+        requestLogger.error("Exception during handling of request to ${ctx.path()}", e)
     }.start()
 
     /* Starts CLI loop (blocking). */
@@ -105,12 +106,11 @@ private fun getOpenApiOptions(): OpenApiOptions {
     val applicationInfo: Info = Info()
         .version("1.0.0")
         .title("Swiss QR Web Service")
-        .description("A web service that can be used to generate and read Swiss QR codes.")
-        .contact(contact)
+        .description("This is Open API web service that can be used to generate and read Swiss QR codes for invoices.\n\nUsage requires a valid API token!")
 
     return OpenApiOptions(applicationInfo).apply {
-        path("/swagger-docs") // endpoint for OpenAPI json
-        swagger(SwaggerOptions("/swagger-ui"))
+        path("/openapi.json") // endpoint for OpenAPI JSON
+        swagger(SwaggerOptions(""))
         activateAnnotationScanningFor("ch.pontius.swissqr.api.handlers.qr")
     }
 }

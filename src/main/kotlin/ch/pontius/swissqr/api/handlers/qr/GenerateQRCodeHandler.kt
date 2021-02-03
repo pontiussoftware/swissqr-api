@@ -33,7 +33,7 @@ class GenerateQRCodeHandler : PostRestHandler {
 
     @OpenApi(
         summary = "Generates a new QR code with the information provided via POST.",
-        path = "/api/public/qr/generate/:type",
+        path = "/public/qr/generate/:type",
         method = HttpMethod.POST,
         headers = [
             OpenApiParam(AccessManager.API_KEY_HEADER, String::class, description = "API Token used for authentication. Syntax: Bearer <Token>", required = false)

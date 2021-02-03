@@ -38,7 +38,7 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
 
     @OpenApi(
         summary = "Generates a new QR code with the information provided via GET.",
-        path = "/api/public/qr/simple/:type",
+        path = "/public/qr/simple/:type",
         method = HttpMethod.GET,
         headers = [
             OpenApiParam(AccessManager.API_KEY_HEADER, String::class, description = "API Token used for authentication. Must be either set in URL or header. Syntax: Bearer <Token>", required = false)

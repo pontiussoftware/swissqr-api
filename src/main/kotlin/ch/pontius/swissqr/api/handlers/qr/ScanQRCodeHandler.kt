@@ -38,7 +38,7 @@ class ScanQRCodeHandler : PostRestHandler {
 
     @OpenApi(
         summary = "Scans a swiss QR code with the given information and returns the data it contains.",
-        path = "/api/public/qr/scan",
+        path = "/public/qr/scan",
         method = HttpMethod.POST,
         headers = [
             OpenApiParam(AccessManager.API_KEY_HEADER, String::class, description = "API Token used for authentication. Syntax: Bearer <Token>", required = true)

@@ -1,6 +1,7 @@
 package ch.pontius.swissqr.api.db
 
 import ch.pontius.swissqr.api.model.Entity
+import ch.pontius.swissqr.api.model.Id
 import ch.pontius.swissqr.api.utilities.optimisticRead
 import ch.pontius.swissqr.api.utilities.write
 import org.mapdb.DB
@@ -44,7 +45,7 @@ class DAO<T: Entity>(path: Path, private val serializer: Serializer<T>) : Iterab
      * @param id The ID of the entry.
      * @return Entry [T]
      */
-    operator fun get(id: String) = this.lock.optimisticRead { this.data[id] }
+    operator fun get(id: Id) = this.lock.optimisticRead { this.data[id.value] }
 
     /**
      * Returns true if value for given key exists and false otherwise.
@@ -52,7 +53,7 @@ class DAO<T: Entity>(path: Path, private val serializer: Serializer<T>) : Iterab
      * @param id The key of the entry.
      * @return Entry [T]
      */
-    fun exists(id: String) = this.lock.optimisticRead { this.data.containsKey(id) }
+    fun exists(id: Id) = this.lock.optimisticRead { this.data.containsKey(id.value) }
 
     /**
      * Deletes the value [T] for the given ID.
@@ -60,8 +61,8 @@ class DAO<T: Entity>(path: Path, private val serializer: Serializer<T>) : Iterab
      * @param id The ID of the entry that should be deleted
      * @return Deleted entry [T]
      */
-    fun delete(id: String): T? = this.lock.write {
-        val deleted = this.data.remove(id)
+    fun delete(id: Id): T? = this.lock.write {
+        val deleted = this.data.remove(id.value)
         this.db.commit()
         return deleted
     }
@@ -77,10 +78,10 @@ class DAO<T: Entity>(path: Path, private val serializer: Serializer<T>) : Iterab
     /**
      * Deletes all values with given ids
      */
-    fun batchDelete(ids: Iterable<String>) = this.lock.write {
+    fun batchDelete(ids: Iterable<Id>) = this.lock.write {
         for (id in ids){
-            val t = data[id]
-            this.data.remove(id)
+            val t = this.data[id.value]
+            this.data.remove(id.value)
         }
         this.db.commit()
     }
@@ -91,7 +92,7 @@ class DAO<T: Entity>(path: Path, private val serializer: Serializer<T>) : Iterab
      * @param value The new value [T]
      */
     fun update(value: T) = this.lock.write {
-        this.data[value.id] = value
+        this.data[value.id.value] = value
         this.db.commit()
     }
 
@@ -100,9 +101,9 @@ class DAO<T: Entity>(path: Path, private val serializer: Serializer<T>) : Iterab
      *
      * @param values An iterable of the values [T] that should be appended.
      */
-    fun batchAppend(values: Iterable<T>): List<String> = this.lock.write {
+    fun batchAppend(values: Iterable<T>): List<Id> = this.lock.write {
         val ids = values.map {
-            this.data[it.id] = it
+            this.data[it.id.value] = it
             it.id
         }
         this.db.commit()

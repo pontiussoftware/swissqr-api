@@ -5,6 +5,7 @@ import ch.pontius.swissqr.api.db.DAO
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.users.User
+import ch.pontius.swissqr.api.model.users.UserId
 
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
@@ -38,7 +39,7 @@ class ConfirmUserHandler(val dao: DAO<User>): GetRestHandler {
         val nonce =  ctx.pathParamMap()["nonce"]?.toLongOrNull() ?: throw ErrorStatusException(400, "Nonce is missing from the request or invalid!")
 
         /* Prepare new user object. */
-        val user = this.dao[userid] ?: throw ErrorStatusException(404, "Requested user cannot be confirmed.")
+        val user = this.dao[UserId(userid)] ?: throw ErrorStatusException(404, "Requested user cannot be confirmed.")
         if (user.confirmed) {
             throw ErrorStatusException(400, "Requested user cannot be confirmed; user has been confirmed already.")
         }

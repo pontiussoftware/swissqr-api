@@ -4,6 +4,8 @@ import boofcv.factory.fiducial.FactoryFiducial
 import boofcv.io.image.ConvertBufferedImage
 import boofcv.struct.image.GrayU8
 import ch.pontius.swissqr.api.basics.PostRestHandler
+import ch.pontius.swissqr.api.db.ListStore
+import ch.pontius.swissqr.api.model.access.Access
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.service.bill.Bill
@@ -22,7 +24,7 @@ import javax.imageio.ImageIO
  * Javalin handler that scans QR codes from PDFs or images, reads their data and returns a list [Bill] data structures.
  *
  * @author Ralph Gasser
- * @version 1.0
+ * @version 1.0.0
  */
 class ScanQRCodeHandler : PostRestHandler {
 

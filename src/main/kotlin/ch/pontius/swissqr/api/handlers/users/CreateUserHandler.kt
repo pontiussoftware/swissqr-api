@@ -40,7 +40,7 @@ class CreateUserHandler(val dao: DAO<User>): PostRestHandler {
         }
 
         /* Prepare new user object. */
-        val user = User.create(email = request.email, password = request.password.hash(), active = true, confirmed = false, roles = arrayOf(Role.CLIENT))
+        val user = User(email = request.email, password = request.password, active = true, confirmed = false)
         this.dao.update(user)
 
         /* Write success response. */

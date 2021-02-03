@@ -8,5 +8,5 @@ package ch.pontius.swissqr.api.model.access
  */
 enum class AccessType {
     GENERATOR, /* Access to the QR generator service. */
-    SCANNER /* Access to the QR scanner service. */
+    SCANNER    /* Access to the QR scanner service. */
 }

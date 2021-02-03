@@ -36,7 +36,7 @@ class GenerateQRCodeHandler : PostRestHandler {
         path = "/public/qr/generate/:type",
         method = HttpMethod.POST,
         headers = [
-            OpenApiParam(AccessManager.API_KEY_HEADER, String::class, description = "API Token used for authentication. Syntax: Bearer <Token>", required = false)
+            OpenApiParam(AccessManager.API_KEY_HEADER, String::class, description = "API Token used for authentication. Syntax: Bearer <Token>", required = true)
         ],
         pathParams = [
             OpenApiParam("type", String::class, "Type of generated invoice. Can either be A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_BILL_WITH_HORIZONTAL_LINE or QR_CODE_ONLY."),

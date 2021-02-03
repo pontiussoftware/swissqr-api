@@ -63,7 +63,7 @@ class GenerateQRCodeSimpleHandler : GetRestHandler {
             OpenApiParam("creditor_address_line_2", String::class, "Address line 2 of the creditor to be printed on the invoice", required = true),
             OpenApiParam("language", String::class, "Language of the generated bill. Options are DE, FR, IT or EN. Defaults to EN."),
             OpenApiParam("resolution", Int::class, "Resolution of the resulting image in dpi. Defaults to 150."),
-            OpenApiParam("token", String::class, description = "API Token used for authentication. Must be either set in URL or header.", required = false)
+            OpenApiParam(AccessManager.API_KEY_PARAM, String::class, description = "API Token used for authentication. Must be either set in URL or header.", required = false)
         ],
         tags = ["QR Generator"],
         responses = [

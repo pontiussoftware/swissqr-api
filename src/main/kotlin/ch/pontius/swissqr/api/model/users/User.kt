@@ -52,7 +52,7 @@ data class User(
             UserId(input.readUTF()),
             input.readUTF(),
             Password.HashedPassword(input.readUTF()),
-            input.readUTF(),
+            input.readUTF().ifEmpty { null },
             input.readBoolean(),
             input.readBoolean(),
             input.unpackLong()

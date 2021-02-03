@@ -2,7 +2,7 @@ group 'ch.pontius'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlinVersion = '1.4.10'
+    ext.kotlinVersion = '1.4.21'
     repositories {
         jcenter()
     }
@@ -26,11 +26,11 @@ repositories {
 
 dependencies {
     ///// Javalin
-    compile group: 'io.javalin', name: 'javalin', version: '3.10.0+'
-    compile group: 'io.javalin', name: 'javalin-openapi', version: '3.10.0+'
+    compile group: 'io.javalin', name: 'javalin', version: '3.13.3'
+    compile group: 'io.javalin', name: 'javalin-openapi', version: '3.13.3'
 
     ///// BoofCV
-    compile group: 'org.boofcv', name: 'boofcv-all', version: '0.36'
+    compile group: 'org.boofcv', name: 'boofcv-all', version: '0.37'
 
     ///// Map DB
     compile group: 'org.mapdb', name: 'mapdb', version: '3.0.8'
@@ -46,7 +46,6 @@ dependencies {
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.3'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.3'
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
-
 
     //// QR Bill
     compile group: 'net.codecrete.qrbill', name: 'qrbill-generator', version: '2.4.3+'

@@ -1,5 +1,6 @@
 package ch.pontius.swissqr.api.db
 
+import ch.pontius.swissqr.api.model.Id
 import ch.pontius.swissqr.api.utilities.read
 import ch.pontius.swissqr.api.utilities.write
 import org.mapdb.DB
@@ -57,7 +58,24 @@ class ListStore<T>(path: Path, private val serializer: Serializer<T>) : MutableI
      * @return true on success, false otherwise.
      */
     fun append(item: T?): Boolean= this.lock.write {
-        this.data.add(item)
+        val ret = this.data.add(item)
+        this.db.commit()
+        ret
+    }
+
+    /**
+     * Appends the given values using this [ListStore]
+     *
+     * @param values An iterable of the values [T] that should be appended.
+     */
+    fun batchAppend(values: Iterable<T?>): Boolean = this.lock.write {
+        val success = values.all { this.data.add(it) }
+        if (success) {
+            this.db.commit()
+        } else {
+            this.db.rollback()
+        }
+        success
     }
 
     /**

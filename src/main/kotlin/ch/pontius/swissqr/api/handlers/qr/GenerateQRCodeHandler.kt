@@ -1,11 +1,12 @@
 package ch.pontius.swissqr.api.handlers.qr
 
-import ch.pontius.swissqr.api.basics.AccessManagedRestHandler
+import ch.pontius.swissqr.api.basics.AccessManager
 import ch.pontius.swissqr.api.basics.PostRestHandler
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.service.bill.Bill
-import ch.pontius.swissqr.api.model.users.Role
+import ch.pontius.swissqr.api.model.users.Permission
+import io.javalin.core.util.Header
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
@@ -17,23 +18,26 @@ import net.codecrete.qrbill.generator.OutputSize
 import net.codecrete.qrbill.generator.QRBill
 
 /**
- * Javalin handler that acts as a swiss QR code generator that can be used via HTTP POST. It supports different address
- * and invoice formats.
+ * A [PostRestHandler] for Javalin that acts as a swiss QR code generator that can be used via HTTP POST.
+ * It supports different address and invoice formats.
  *
  * @author Ralph Gasser
- * @version 1.0
+ * @version 1.0.1
  */
-class GenerateQRCodeHandler : PostRestHandler, AccessManagedRestHandler {
+class GenerateQRCodeHandler : PostRestHandler {
     /** Path of [GenerateQRCodeSimpleHandler]. */
     override val route: String = "qr/generate/:type"
 
-    /** Set of [Role]s allowed to use [GenerateQRCodeHandler]. */
-    override val permittedRoles: Set<Role> = setOf(Role.GENERATE)
+    /** Set of [Permission]s a user requires in order to be allowed to use [GenerateQRCodeHandler]. */
+    override val requiredPermissions: Set<Permission> = setOf(Permission.QR_CREATE)
 
     @OpenApi(
         summary = "Generates a new QR code with the information provided via POST.",
-        path = "/api/qr/generate/:type",
+        path = "/api/public/qr/generate/:type",
         method = HttpMethod.POST,
+        headers = [
+            OpenApiParam(AccessManager.API_KEY_HEADER, String::class, description = "API Token used for authentication. Syntax: Bearer <Token>", required = false)
+        ],
         pathParams = [
             OpenApiParam("type", String::class, "Type of generated invoice. Can either be A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_BILL_WITH_HORIZONTAL_LINE or QR_CODE_ONLY."),
         ],

@@ -23,9 +23,6 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Paths
 
-
-
-
 /**
  * Entry point for Swiss QR API Service.
  *
@@ -62,25 +59,22 @@ fun main(args: Array<String>) {
         c.server { config.server.server() }
     }.routes {
         path("api") {
-            handlers.forEach { handler ->
-                path(handler.route) {
-                    val permittedRoles = if (handler is AccessManagedRestHandler) {
-                        handler.permittedRoles
-                    } else {
-                        emptySet()
-                    }
-                    when (handler) {
-                        is GetRestHandler -> ApiBuilder.get(handler::get, permittedRoles)
-                        is PostRestHandler -> ApiBuilder.post(handler::post, permittedRoles)
-                        is PatchRestHandler -> ApiBuilder.patch(handler::patch, permittedRoles)
-                        is DeleteRestHandler -> ApiBuilder.delete(handler::delete, permittedRoles)
+            path("public") {
+                handlers.forEach { handler ->
+                    path(handler.route) {
+                        when (handler) {
+                            is GetRestHandler -> ApiBuilder.get(handler::get, handler.requiredPermissions)
+                            is PostRestHandler -> ApiBuilder.post(handler::post, handler.requiredPermissions)
+                            is PatchRestHandler -> ApiBuilder.patch(handler::patch, handler.requiredPermissions)
+                            is DeleteRestHandler -> ApiBuilder.delete(handler::delete, handler.requiredPermissions)
+                        }
                     }
                 }
-            }
-            after {
-                val token = it.attribute<Token>(AccessManager.TOKEN_ATTRIBUTE)
-                if (token is Token) {
-                    dataAccessLayer.accessLogs.append(Access(token.id, it.ip(), it.method(), it.path(), it.status(), System.currentTimeMillis()))
+                after {
+                    val token = it.attribute<Token>(AccessManager.API_KEY_PARAM)
+                    if (token is Token) {
+                        dataAccessLayer.accessLogs.append(Access(token.id, it.ip(), it.method(), it.path(), it.status(), System.currentTimeMillis()))
+                    }
                 }
             }
         }

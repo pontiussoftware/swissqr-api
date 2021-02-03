@@ -3,12 +3,13 @@ package ch.pontius.swissqr.api.handlers.qr
 import boofcv.factory.fiducial.FactoryFiducial
 import boofcv.io.image.ConvertBufferedImage
 import boofcv.struct.image.GrayU8
-import ch.pontius.swissqr.api.basics.AccessManagedRestHandler
+import ch.pontius.swissqr.api.basics.AccessManager
 import ch.pontius.swissqr.api.basics.PostRestHandler
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.service.bill.Bill
-import ch.pontius.swissqr.api.model.users.Role
+import ch.pontius.swissqr.api.model.users.Permission
+import io.javalin.core.util.Header
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
 import net.codecrete.qrbill.generator.QRBill
@@ -21,24 +22,27 @@ import java.io.IOException
 import javax.imageio.ImageIO
 
 /**
- * A Javalin handler that scans QR codes from PDFs or images, parses the encoded data and constructs a list of [Bill]
- * data structures.
+ * A [PostRestHandler] for Javalin  that scans QR codes from PDFs or images, parses the encoded data and construct
+ * a list of [Bill] data structures.
  *
  * @author Ralph Gasser
  * @version 1.0.1
  */
-class ScanQRCodeHandler : PostRestHandler, AccessManagedRestHandler {
+class ScanQRCodeHandler : PostRestHandler {
     /** Path of [ScanQRCodeHandler]. */
     override val route: String
         get() = "qr/scan"
 
-    /** Set of [Role]s allowed to use [ScanQRCodeHandler]. */
-    override val permittedRoles: Set<Role> = setOf(Role.SCAN)
+    /** Set of [Permission]s a user requires in order to be allowed to use [ScanQRCodeHandler]. */
+    override val requiredPermissions: Set<Permission> = setOf(Permission.QR_SCAN)
 
     @OpenApi(
         summary = "Scans a swiss QR code with the given information and returns the data it contains.",
-        path = "/api/qr/scan",
+        path = "/api/public/qr/scan",
         method = HttpMethod.POST,
+        headers = [
+            OpenApiParam(AccessManager.API_KEY_HEADER, String::class, description = "API Token used for authentication. Syntax: Bearer <Token>", required = true)
+        ],
         requestBody = OpenApiRequestBody(content = [
             OpenApiContent(from = ByteArray::class, type = "image/png"),
             OpenApiContent(from = ByteArray::class, type = "image/jpg"),
@@ -92,7 +96,7 @@ class ScanQRCodeHandler : PostRestHandler, AccessManagedRestHandler {
             try {
                 val doc = PDDocument.load(ctx.req.inputStream)
                 val renderer = PDFRenderer(doc)
-                val numberOfPages: Int = doc.getNumberOfPages()
+                val numberOfPages: Int = doc.numberOfPages
                 val result = (0 until numberOfPages).map {
                     renderer.renderImageWithDPI(it, 300.0f, ImageType.RGB)
                 }

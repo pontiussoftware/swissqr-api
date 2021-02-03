@@ -1,12 +1,13 @@
 package ch.pontius.swissqr.api.handlers.qr
 
-import ch.pontius.swissqr.api.basics.AccessManagedRestHandler
+import ch.pontius.swissqr.api.basics.AccessManager
 import ch.pontius.swissqr.api.basics.GetRestHandler
 import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.service.bill.Address
 import ch.pontius.swissqr.api.model.service.bill.Bill
-import ch.pontius.swissqr.api.model.users.Role
+import ch.pontius.swissqr.api.model.users.Permission
+import io.javalin.core.util.Header
 
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
@@ -20,7 +21,7 @@ import net.codecrete.qrbill.generator.QRBill
 import java.math.BigDecimal
 
 /**
- * [GetRestHandler] that acts as a simple swiss QR code generator that can be invoked via HTTP GET.
+ * A [GetRestHandler] for Javalin that acts as a simple swiss QR code generator that can be invoked via HTTP GET.
  *
  * Its functionality is slightly reduced as compared to [GenerateQRCodeHandler]. For example, it only generates PNG
  * files and only supports an unstructured address format.
@@ -28,17 +29,20 @@ import java.math.BigDecimal
  * @author Ralph Gasser
  * @version 1.0.1
  */
-class GenerateQRCodeSimpleHandler : GetRestHandler, AccessManagedRestHandler {
+class GenerateQRCodeSimpleHandler : GetRestHandler {
     /** Path of [GenerateQRCodeSimpleHandler]. */
     override val route: String = "qr/simple/:type"
 
-    /** Set of [Role]s allowed to use [GenerateQRCodeHandler]. */
-    override val permittedRoles: Set<Role> = setOf(Role.GENERATE)
+    /** Set of [Permission]s a user requires in order to be allowed to use [GenerateQRCodeHandler]. */
+    override val requiredPermissions: Set<Permission> = setOf(Permission.QR_CREATE)
 
     @OpenApi(
         summary = "Generates a new QR code with the information provided via GET.",
-        path = "/api/qr/simple/:type",
+        path = "/api/public/qr/simple/:type",
         method = HttpMethod.GET,
+        headers = [
+            OpenApiParam(AccessManager.API_KEY_HEADER, String::class, description = "API Token used for authentication. Must be either set in URL or header. Syntax: Bearer <Token>", required = false)
+        ],
         pathParams = [
             OpenApiParam("type", String::class, "Type of generated invoice. Can either be A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_BILL_WITH_HORIZONTAL_LINE or QR_CODE_ONLY."),
         ],
@@ -58,7 +62,8 @@ class GenerateQRCodeSimpleHandler : GetRestHandler, AccessManagedRestHandler {
             OpenApiParam("creditor_address_line_1", String::class, "Address line 1 of the creditor to be printed on the invoice", required = true),
             OpenApiParam("creditor_address_line_2", String::class, "Address line 2 of the creditor to be printed on the invoice", required = true),
             OpenApiParam("language", String::class, "Language of the generated bill. Options are DE, FR, IT or EN. Defaults to EN."),
-            OpenApiParam("resolution", Int::class, "Resolution of the resulting image in dpi. Defaults to 150.")
+            OpenApiParam("resolution", Int::class, "Resolution of the resulting image in dpi. Defaults to 150."),
+            OpenApiParam("token", String::class, description = "API Token used for authentication. Must be either set in URL or header.", required = false)
         ],
         tags = ["QR Generator"],
         responses = [

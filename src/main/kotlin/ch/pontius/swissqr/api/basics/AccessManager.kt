@@ -1,6 +1,7 @@
 package ch.pontius.swissqr.api.basics
 
 import ch.pontius.swissqr.api.db.MapStore
+import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.users.Token
 import ch.pontius.swissqr.api.model.users.TokenId
 import io.javalin.core.security.AccessManager
@@ -17,12 +18,13 @@ import io.javalin.http.Handler
  * GET query parameter : ?token=<token>
  *
  * @author Ralph Gasser
- * @version 1.0.0
+ * @version 1.0.1
  */
-class AccessManager(val tokenStore: MapStore<Token>): AccessManager {
+class AccessManager(private val tokenStore: MapStore<Token>): AccessManager {
 
     companion object {
-        const val TOKEN_ATTRIBUTE = "token"
+        const val API_KEY_HEADER = "X-API-Key"
+        const val API_KEY_PARAM = "api_key"
     }
 
     override fun manage(handler: Handler, ctx: Context, permittedRoles: Set<Role>) {
@@ -31,9 +33,10 @@ class AccessManager(val tokenStore: MapStore<Token>): AccessManager {
             handler.handle(ctx)
         } else {
             /* Tries to obtain the access token. */
-            val tokenId = ctx.header(Header.AUTHORIZATION)?.replace("Bearer ", "") ?: ctx.queryParam(TOKEN_ATTRIBUTE)
+            val tokenId = ctx.header(API_KEY_HEADER)?.replace("Bearer ", "") ?: ctx.queryParam(API_KEY_PARAM)
             if (tokenId == null) {
                 ctx.status(401)
+                ctx.json(Status.ErrorStatus(403, "API token is missing from request."))
                 return
             }
 
@@ -41,16 +44,17 @@ class AccessManager(val tokenStore: MapStore<Token>): AccessManager {
             val token = this.tokenStore[TokenId(tokenId)]
             if (token == null || !token.active) {
                 ctx.status(403)
+                ctx.json(Status.ErrorStatus(403, "API Token is nonexistent or has been invalidated."))
                 return
             }
 
             /* Set token attribute to context (used for logging). */
-            ctx.attribute(TOKEN_ATTRIBUTE, token)
-
-            if (token.roles.any { permittedRoles.contains(it) }) {
+            ctx.attribute(API_KEY_PARAM, token)
+            if (permittedRoles.all { token.roles.contains(it) }) {
                 handler.handle(ctx)
             } else {
                 ctx.status(403)
+                ctx.json(Status.ErrorStatus(403, "API Token does not provide access to given method."))
             }
         }
     }

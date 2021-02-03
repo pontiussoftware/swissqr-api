@@ -1,7 +1,7 @@
 package ch.pontius.swissqr.api.cli
 
 import ch.pontius.swissqr.api.db.DataAccessLayer
-import ch.pontius.swissqr.api.model.Config
+import ch.pontius.swissqr.api.model.config.Config
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.subcommands

@@ -57,6 +57,7 @@ fun main(args: Array<String>) {
         c.enableCorsForAllOrigins()
         c.requestLogger { ctx, f -> logger.info("Request ${ctx.req.requestURI} completed in ${f}ms.")}
         c.server { config.server.server() }
+        c.enforceSsl = config.server.sslEnforce
     }.routes {
         path("api") {
             path("public") {

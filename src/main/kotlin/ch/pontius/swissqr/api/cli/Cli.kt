@@ -34,7 +34,8 @@ class Cli(val dataAccessLayer: DataAccessLayer, val config: Config) {
             context { helpFormatter = CliHelpFormatter()}
         }
     }.subcommands(
-        UserCommand()
+        UserCommand(this.dataAccessLayer.userStore, this.dataAccessLayer.tokenStore),
+        TokenCommand(this.dataAccessLayer.tokenStore, this.dataAccessLayer.userStore)
     )
 
     /**

@@ -35,7 +35,8 @@ class Cli(val dataAccessLayer: DataAccessLayer, val config: Config) {
         }
     }.subcommands(
         UserCommand(this.dataAccessLayer.userStore, this.dataAccessLayer.tokenStore),
-        TokenCommand(this.dataAccessLayer.tokenStore, this.dataAccessLayer.userStore)
+        TokenCommand(this.dataAccessLayer.tokenStore, this.dataAccessLayer.userStore),
+        LogCommand(this.dataAccessLayer.accessLogs)
     )
 
     /**

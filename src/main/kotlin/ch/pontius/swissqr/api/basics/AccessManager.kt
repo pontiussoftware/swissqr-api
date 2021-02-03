@@ -26,28 +26,32 @@ class AccessManager(val tokenStore: MapStore<Token>): AccessManager {
     }
 
     override fun manage(handler: Handler, ctx: Context, permittedRoles: Set<Role>) {
+        /* If given Handler has no access control, handle request and return. */
+        if (permittedRoles.isEmpty()) {
+            handler.handle(ctx)
+        } else {
+            /* Tries to obtain the access token. */
+            val tokenId = ctx.header(Header.AUTHORIZATION)?.replace("Bearer ", "") ?: ctx.queryParam(TOKEN_ATTRIBUTE)
+            if (tokenId == null) {
+                ctx.status(401)
+                return
+            }
 
-        /* Tries to obtain the access token. */
-        val tokenId = ctx.header(Header.AUTHORIZATION)?.replace("Bearer ", "") ?: ctx.queryParam(TOKEN_ATTRIBUTE)
-        if (tokenId == null) {
-            ctx.status(401)
-            return
-        }
+            /* Lookup the access token in the store. */
+            val token = this.tokenStore[TokenId(tokenId)]
+            if (token == null || !token.active) {
+                ctx.status(403)
+                return
+            }
 
-        /* Lookup the access token in the store. */
-        val token = this.tokenStore[TokenId(tokenId)]
-        if (token == null || !token.active) {
-            ctx.status(403)
-            return
-        }
+            /* Set token attribute to context (used for logging). */
+            ctx.attribute(TOKEN_ATTRIBUTE, token)
 
-        /* Set token attribute to context (used for logging). */
-        ctx.attribute(TOKEN_ATTRIBUTE, token)
-
-        when {
-            permittedRoles.isEmpty() -> handler.handle(ctx)
-            token.roles.any { permittedRoles.contains(it) } -> handler.handle(ctx)
-            else -> ctx.status(403)
+            if (token.roles.any { permittedRoles.contains(it) }) {
+                handler.handle(ctx)
+            } else {
+                ctx.status(403)
+            }
         }
     }
 }

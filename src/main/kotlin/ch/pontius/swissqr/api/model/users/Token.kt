@@ -8,17 +8,17 @@ import org.mapdb.DataOutput2
  * An access [Token] for the Swiss QR code API Service.
  *
  * @author Ralph Gasser
- * @version 1.0.0
+ * @version 1.0.1
  */
-data class Token(override val id: TokenId, val userId: UserId, val active: Boolean, val created: Long, val roles: Array<Permission>): Entity(id) {
-
+data class Token(override val id: TokenId, val userId: UserId, val active: Boolean, val remarks: String?, val created: Long, val roles: Array<Permission>): Entity(id) {
     /**
      * Creates a new [Token] for the given [User] with the given [Permission]s.
      *
      * @param user The [User] to create the [Token] for.
      * @param roles The roles to create the [Token] with.
+     * @param remarks Custom remarks for the [Token].
      */
-    constructor(user: User, roles: Array<Permission>) : this(TokenId(), user.id, true, System.currentTimeMillis(), roles) {
+    constructor(user: User, roles: Array<Permission>, remarks: String? = null) : this(TokenId(), user.id, true, remarks, System.currentTimeMillis(), roles) {
         require(user.active && user.confirmed) { "Failed to create token: User ${user.id} is inactive." }
         require(this.roles.isNotEmpty()) { "Failed to create token: You must specify at least one role in order to create a token." }
     }
@@ -28,6 +28,7 @@ data class Token(override val id: TokenId, val userId: UserId, val active: Boole
             out.writeUTF(value.id.value)
             out.writeUTF(value.userId.value)
             out.writeBoolean(value.active)
+            out.writeUTF(value.remarks ?: "")
             out.packLong(value.created)
             out.packInt(value.roles.size)
             value.roles.forEach { out.packInt(it.ordinal) }
@@ -37,6 +38,7 @@ data class Token(override val id: TokenId, val userId: UserId, val active: Boole
             TokenId(input.readUTF()),
             UserId(input.readUTF()),
             input.readBoolean(),
+            input.readUTF().ifEmpty { null },
             input.unpackLong(),
             Array(input.unpackInt()) {
                 Permission.values()[input.unpackInt()]

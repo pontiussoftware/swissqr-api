@@ -65,12 +65,15 @@ class TokenCommand(val tokenStore: MapStore<Token>, val userStore: MapStore<User
         /** The [UserId] to create the [Token] for. */
         private val userId: UserId by option("-i", "--id").convert { UserId(it) }.required()
 
+        /** The [UserId] to create the [Token] for. */
+        private val remarks: String? by option("-r", "--remark")
+
         /** The [Permission]s the token should have. */
         private val roles: List<Permission> by option("-r", "--role").convert { Permission.valueOf(it) }.multiple()
 
         override fun run() {
             val user = this@TokenCommand.userStore[this.userId] ?: throw IllegalArgumentException("Failed to create token: User $userId does not exist.")
-            val token = Token(user, this.roles.toTypedArray())
+            val token = Token(user, this.roles.toTypedArray(), this.remarks)
             val duration = measureTimeMillis {
                 this@TokenCommand.tokenStore.update(token)
             }

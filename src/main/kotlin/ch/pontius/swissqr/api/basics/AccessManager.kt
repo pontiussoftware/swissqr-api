@@ -42,14 +42,22 @@ class AccessManager(private val tokenStore: MapStore<Token>): AccessManager {
 
             /* Lookup the access token in the store. */
             val token = this.tokenStore[TokenId(tokenId)]
-            if (token == null || !token.active) {
+            if (token == null) {
+                ctx.status(401)
+                ctx.json(Status.ErrorStatus(401, "API Token is nonexistent."))
+                return
+            } else {
+                ctx.attribute(API_KEY_PARAM, token)
+            }
+
+            /* Check if the access token is still active. */
+            if (!token.active) {
                 ctx.status(403)
-                ctx.json(Status.ErrorStatus(403, "API Token is nonexistent or has been invalidated."))
+                ctx.json(Status.ErrorStatus(403, "API Token has been invalidated."))
                 return
             }
 
             /* Set token attribute to context (used for logging). */
-            ctx.attribute(API_KEY_PARAM, token)
             if (permittedRoles.all { token.roles.contains(it) }) {
                 handler.handle(ctx)
             } else {

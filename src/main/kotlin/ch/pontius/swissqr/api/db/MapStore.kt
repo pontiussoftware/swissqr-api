@@ -3,21 +3,23 @@ package ch.pontius.swissqr.api.db
 import ch.pontius.swissqr.api.model.Entity
 import ch.pontius.swissqr.api.model.Id
 import ch.pontius.swissqr.api.utilities.optimisticRead
+import ch.pontius.swissqr.api.utilities.read
 import ch.pontius.swissqr.api.utilities.write
 import org.mapdb.DB
 import org.mapdb.DBMaker
 import org.mapdb.Serializer
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.*
 import java.util.concurrent.locks.StampedLock
 
 /**
  * A simple [MapStore] implementation used for persisting [Entity] objects mapped to a given [Id].
  *
  * @author Ralph Gasser
- * @version 1.0.0
+ * @version 1.0.1
  */
-class MapStore<T: Entity>(path: Path, private val serializer: Serializer<T>) : AutoCloseable {
+class MapStore<T: Entity>(path: Path, private val serializer: Serializer<T>): Iterable<T?>, AutoCloseable {
 
     init {
         Files.createDirectories(path.parent)
@@ -34,6 +36,10 @@ class MapStore<T: Entity>(path: Path, private val serializer: Serializer<T>) : A
 
     /** Name of the entity accessed through this [MapStore]. */
     val name = path.fileName.toString().replace(".db","")
+
+    /** Size of this [MapStore]. */
+    val size: Int
+        get() = this.data.size
 
     init {
         this.db.commit()
@@ -101,7 +107,7 @@ class MapStore<T: Entity>(path: Path, private val serializer: Serializer<T>) : A
      *
      * @param values An iterable of the values [T] that should be appended.
      */
-    fun batchAppend(values: Iterable<T>): List<Id> = this.lock.write {
+    fun batchUpdate(values: Iterable<T>): List<Id> = this.lock.write {
         val ids = values.map {
             this.data[it.id.value] = it
             it.id
@@ -117,6 +123,23 @@ class MapStore<T: Entity>(path: Path, private val serializer: Serializer<T>) : A
         if (!this.db.isClosed()) {
             this.data.close()
             this.db.close()
+        }
+    }
+
+    /**
+     * Returns an [Iterator] for all entries in this [MapStore].
+     */
+    override fun iterator(): Iterator<T?> = object : Iterator<T?> {
+        /** Internal list of keys. */
+        val keys = this@MapStore.lock.read {
+            LinkedList(this@MapStore.data.keys)
+        }
+        override fun hasNext(): Boolean = this.keys.isNotEmpty()
+        override fun next(): T? = this@MapStore.lock.read {
+            return this@MapStore[object: Id {
+                override val value: String
+                    get() = keys.poll()
+            }]
         }
     }
 }

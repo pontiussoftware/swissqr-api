@@ -39,6 +39,11 @@ fun main(args: Array<String>) {
         kotlinx.serialization.json.Json.decodeFromString(Config.serializer(), reader.readText())
     }
 
+    /* Prepare Log4j logging facilities. */
+    if (config.logConfig != null && Files.isRegularFile(config.logConfig)) {
+        System.getProperties().setProperty("log4j.configurationFile", config.logConfig.toString())
+    }
+
     /* Initialize data access layer. */
     val dataAccessLayer = DataAccessLayer(config.data)
 

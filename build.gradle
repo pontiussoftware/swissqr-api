@@ -48,10 +48,10 @@ dependencies {
     compile group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.21'
     compile group: 'org.apache.pdfbox', name: 'fontbox', version: '2.0.21'
 
-    ////// Log4J
-    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.3'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.3'
-    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
+    ////// Log4j2 & SLF4j
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.0'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.0'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.14.0'
 
     //// QR Bill
     compile group: 'net.codecrete.qrbill', name: 'qrbill-generator', version: '2.4.3+'

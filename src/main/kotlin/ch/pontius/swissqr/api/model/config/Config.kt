@@ -21,5 +21,6 @@ data class Config(
     val data: Path = Paths.get("./data"),
 
     /** Path to a custom Log4j2 config file (XML). Defaults to null! */
+    @Serializable(with = PathSerializer::class)
     val logConfig: Path? = null
 )

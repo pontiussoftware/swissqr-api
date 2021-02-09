@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration strict="true" name="Default">
-<Appenders>
-    <Appender type="Console" name="STDOUT">
-        <Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5p %c{1}:%L - %m%n"/>
-    </Appender>
-</Appenders>
-<Loggers>
-    <!-- Logger for WebService -->
-    <Logger name="ch.pontius.swissqr.api.requests" level="debug"/>
+    <Appenders>
+        <Appender type="Console" name="STDOUT">
+            <Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5p %c{1}:%L - %m%n"/>
+        </Appender>
+        <Appender type="RollingFile" name="WEBLOG" fileName="./logs/request.log" filePattern="./logs/request.%i.log.gz">
+            <Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss} [%t] %-5p %c{1}:%L - %m%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="25 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5" />
+        </Appender>
+    </Appenders>
+    <Loggers>
+        <!-- Logger for WebService -->
+        <Logger name="ch.pontius.swissqr.api.requests" level="debug" additivity="false"/>
 
-    <!-- Root logger -->
-    <Root level="info">
-        <AppenderRef ref="STDOUT"/>
-    </Root>
-</Loggers>
+        <!-- Root logger -->
+        <Root level="info">
+            <AppenderRef ref="STDOUT"/>
+        </Root>
+    </Loggers>
 </Configuration>

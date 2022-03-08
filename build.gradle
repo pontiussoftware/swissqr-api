@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'ch.pontius'
-version '1.1-SNAPSHOT'
+version '0.6.0'
 
 apply plugin: 'java'
 apply plugin: 'kotlin'

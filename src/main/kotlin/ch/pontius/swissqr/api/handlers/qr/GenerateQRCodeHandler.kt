@@ -6,7 +6,6 @@ import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
 import ch.pontius.swissqr.api.model.service.status.Status
 import ch.pontius.swissqr.api.model.service.bill.Bill
 import ch.pontius.swissqr.api.model.users.Permission
-import io.javalin.core.util.Header
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.plugin.openapi.annotations.*
@@ -67,29 +66,30 @@ class GenerateQRCodeHandler : PostRestHandler {
 
         /* Extract and validate format parameters. */
         try {
-            bill.format.outputSize = OutputSize.valueOf(ctx.pathParamMap().getOrDefault("type", "QR_BILL_ONLY").toUpperCase())
+            bill.format.outputSize = OutputSize.valueOf(ctx.pathParamMap().getOrDefault("type", "QR_BILL_ONLY").uppercase())
         } catch (e: IllegalArgumentException) {
             throw ErrorStatusException(400, "Illegal value for parameter 'type'. Possible values are A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_BILL_WITH_HORIZONTAL_LINE or QR_CODE_ONLY!")
         }
 
         try {
-            bill.format.language = Language.valueOf(ctx.queryParam("language", "EN")!!.toUpperCase())
+            bill.format.language = Language.valueOf(ctx.queryParam("language", "EN")!!.uppercase())
         } catch (e: IllegalArgumentException) {
             throw ErrorStatusException(400, "Illegal value for parameter 'language'. Possible values are DE, FR, IT or EN!")
         }
 
-        val width = ctx.queryParam("width")?.toDoubleOrNull() ?: when(bill.format.outputSize) {
+        val width = ctx.queryParam("width")?.toDoubleOrNull() ?: when(bill.format.outputSize ?: throw ErrorStatusException(500, "Bill format not specified! This is a programmers error.")) {
             OutputSize.A4_PORTRAIT_SHEET -> 210.0
             OutputSize.QR_BILL_ONLY -> 210.0
-            OutputSize.QR_BILL_WITH_HORIZONTAL_LINE -> 210.0
+            OutputSize.QR_BILL_EXTRA_SPACE -> 210.0
             OutputSize.QR_CODE_ONLY -> 46.0
         }
-        val height = ctx.queryParam("height")?.toDoubleOrNull() ?: when(bill.format.outputSize) {
+        val height = ctx.queryParam("height")?.toDoubleOrNull() ?: when(bill.format.outputSize ?: throw ErrorStatusException(500, "Bill format not specified! This is a programmers error.")) {
             OutputSize.A4_PORTRAIT_SHEET -> 297.0
-            OutputSize.QR_BILL_WITH_HORIZONTAL_LINE -> 110.0
+            OutputSize.QR_BILL_EXTRA_SPACE -> 110.0
             OutputSize.QR_BILL_ONLY -> 105.0
             OutputSize.QR_CODE_ONLY -> 46.0
         }
+
         val resolution = ctx.queryParam("resolution")?.toIntOrNull() ?: 150
 
         if (width < 0.0 || height < 0.0) {
@@ -106,7 +106,7 @@ class GenerateQRCodeHandler : PostRestHandler {
         }
 
         /* Generate QR code. */
-        val data = when(GraphicsFormat.valueOf(ctx.queryParam("format", "PNG")!!.toUpperCase())) {
+        val data = when(GraphicsFormat.valueOf(ctx.queryParam("format", "PNG")!!.uppercase())) {
             GraphicsFormat.PNG -> {
                 bill.format.graphicsFormat = GraphicsFormat.PNG
                 val canvas = PNGCanvas(width, height, resolution, "Arial, Helvetica, sans-serif")

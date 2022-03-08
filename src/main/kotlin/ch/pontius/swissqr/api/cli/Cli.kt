@@ -10,7 +10,6 @@ import com.github.ajalt.clikt.output.HelpFormatter
 import org.jline.reader.LineReaderBuilder
 import org.jline.terminal.Terminal
 import org.jline.terminal.TerminalBuilder
-import org.slf4j.Logger
 import java.io.IOException
 import java.util.ArrayList
 import java.util.regex.Pattern
@@ -20,7 +19,7 @@ import kotlin.system.exitProcess
  * The [Cli] class that provides basic CLI functionality.
  *
  * @author Ralph Gasser
- * @version 1.0.0
+ * @version 1.0.1
  */
 class Cli(val dataAccessLayer: DataAccessLayer, val config: Config) {
 
@@ -29,7 +28,7 @@ class Cli(val dataAccessLayer: DataAccessLayer, val config: Config) {
         private const val PROMPT = "QR> "
     }
 
-    /** Base [NoOpCliktCommand] with list of all knonw subcommands. */
+    /** Base [NoOpCliktCommand] with list of all known subcommands. */
     private val clikt = object: NoOpCliktCommand(name = "qr"){
         init {
             context { helpFormatter = CliHelpFormatter()}
@@ -45,7 +44,7 @@ class Cli(val dataAccessLayer: DataAccessLayer, val config: Config) {
      * program will terminate.
      */
     fun loop() {
-        var terminal: Terminal? = null
+        var terminal: Terminal?
         try {
             terminal = TerminalBuilder.terminal() //basic terminal
         } catch (e: IOException) {
@@ -59,10 +58,10 @@ class Cli(val dataAccessLayer: DataAccessLayer, val config: Config) {
 
         while (true) {
             val line = lineReader.readLine(PROMPT).trim()
-            if (line.toLowerCase() == "exit" || line.toLowerCase() == "quit") {
+            if (line.lowercase() == "exit" || line.lowercase() == "quit") {
                 break
             }
-            if (line.toLowerCase() == "help") {
+            if (line.lowercase() == "help") {
                 println(clikt.getFormattedHelp()) //TODO overwrite with something more useful in a cli context
                 continue
             }
@@ -77,8 +76,6 @@ class Cli(val dataAccessLayer: DataAccessLayer, val config: Config) {
                 when (e) {
                     is com.github.ajalt.clikt.core.NoSuchSubcommand -> println("Please enter a valid command; type help for list of commands.")
                     is com.github.ajalt.clikt.core.PrintHelpMessage -> println(e.command.getFormattedHelp())
-                    is com.github.ajalt.clikt.core.MissingParameter,
-                    is com.github.ajalt.clikt.core.NoSuchOption -> println(e.localizedMessage)
                     else ->  println(e.localizedMessage)
                 }
             }

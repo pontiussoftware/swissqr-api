@@ -107,8 +107,10 @@ fun main(args: Array<String>) {
             }
         }
     }.before { ctx ->
-        val req = ctx.req()
-        requestLogger.debug("${req.method} request to ${ctx.path()} with params (${ctx.queryParamMap().map { e -> "${e.key}=${e.value}" }.joinToString()}) from ${req.remoteAddr}")
+        if (ctx.path().startsWith("/api/")) {
+            val req = ctx.req()
+            requestLogger.debug("API ${req.method} request to ${ctx.path()} with params (${ctx.queryParamMap().map { e -> "${e.key}=${e.value}" }.joinToString()}) from ${req.remoteAddr}")
+        }
     }.error(401) { ctx ->
         ctx.json(ErrorStatus(401, "Unauthorized request!"))
         requestLogger.error("Unauthorized request to {}.", ctx.path())

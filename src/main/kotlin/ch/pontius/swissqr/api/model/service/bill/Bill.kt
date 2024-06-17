@@ -1,6 +1,7 @@
 package ch.pontius.swissqr.api.model.service.bill
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import ch.pontius.swissqr.api.utilities.serializers.BigDecimalSerializer
+import kotlinx.serialization.Serializable
 import net.codecrete.qrbill.generator.Bill
 import java.lang.IllegalArgumentException
 import java.math.BigDecimal
@@ -10,24 +11,26 @@ import java.math.BigDecimal
  * Can be converted to a [net.codecrete.qrbill.generator.Bill]
  *
  * @author Ralph Gasser
- * @version 1.0
+ * @version 2.0.0
  */
+@Serializable
 data class Bill(
-    @JsonProperty("amount") val amount: BigDecimal,
-    @JsonProperty("currency") val currency: String,
-    @JsonProperty("account") val account: String,
-    @JsonProperty("creditor") val creditor: Address,
-    @JsonProperty("debtor") val debtor: Address,
-    @JsonProperty("message") val message: String? = null,
-    @JsonProperty("billInformation")  val billInformation: String? = null,
-    @JsonProperty("reference")  val reference: String? = null
+    @Serializable(with = BigDecimalSerializer::class)
+    val amount: BigDecimal,
+    val currency: String,
+    val account: String,
+    val creditor: Address,
+    val debtor: Address,
+    val message: String? = null,
+    val billInformation: String? = null,
+    val reference: String? = null
 ) {
     /**
-     * Constructor to convert [net.codecrete.qrbill.generator.Bill] to [Bill].
+     * Constructor to convert [Bill] to [Bill].
      *
-     * @param b [net.codecrete.qrbill.generator.Bill]
+     * @param b [Bill]
      */
-    constructor(b: net.codecrete.qrbill.generator.Bill): this(
+    constructor(b: Bill): this(
         amount = b.amount,
         currency = b.currency,
         account = b.account,
@@ -35,21 +38,13 @@ data class Bill(
         billInformation = b.billInformation,
         reference = b.reference,
         debtor = when(b.debtor.type) {
-            net.codecrete.qrbill.generator.Address.Type.STRUCTURED -> Address.StructuredAddress(
-                b.debtor
-            )
-            net.codecrete.qrbill.generator.Address.Type.COMBINED_ELEMENTS -> Address.CombinedAddress(
-                b.debtor
-            )
+            net.codecrete.qrbill.generator.Address.Type.STRUCTURED -> Address.StructuredAddress(b.debtor)
+            net.codecrete.qrbill.generator.Address.Type.COMBINED_ELEMENTS -> Address.CombinedAddress(b.debtor)
             else -> throw IllegalArgumentException("Provided debtor address format ${b.debtor.type} is not supported.")
         },
         creditor = when(b.creditor.type) {
-            net.codecrete.qrbill.generator.Address.Type.STRUCTURED -> Address.StructuredAddress(
-                b.creditor
-            )
-            net.codecrete.qrbill.generator.Address.Type.COMBINED_ELEMENTS -> Address.CombinedAddress(
-                b.creditor
-            )
+            net.codecrete.qrbill.generator.Address.Type.STRUCTURED -> Address.StructuredAddress(b.creditor)
+            net.codecrete.qrbill.generator.Address.Type.COMBINED_ELEMENTS -> Address.CombinedAddress(b.creditor)
             else -> throw IllegalArgumentException("Provided creditor address format ${b.creditor.type} is not supported.")
         }
     )
@@ -58,10 +53,10 @@ data class Bill(
     /**
      * Converts this [Bill] to an object that can be processed by the QR code generator.
      *
-     * @return [net.codecrete.qrbill.generator.Bill] representation of this [Bill]
+     * @return [Bill] representation of this [Bill]
      */
-    fun toProcessableBill(): net.codecrete.qrbill.generator.Bill  {
-        val bill = net.codecrete.qrbill.generator.Bill()
+    fun toProcessableBill(): Bill  {
+        val bill = Bill()
         bill.account = this.account
         bill.amount = this.amount
         bill.creditor = this.creditor.toProcessableAddress()

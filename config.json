@@ -2,5 +2,8 @@
   "server" : {
     "port": 8081
   },
-  "data" : "./data"
+  "keys": [
+    "test",
+    "key2"
+  ]
 }

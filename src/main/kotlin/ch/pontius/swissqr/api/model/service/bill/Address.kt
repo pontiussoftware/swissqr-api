@@ -1,38 +1,43 @@
 package ch.pontius.swissqr.api.model.service.bill
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonSubTypes
-import com.fasterxml.jackson.annotation.JsonTypeInfo
+
+import io.javalin.openapi.OneOf
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- * A address as used on a QR coded bill and acts as an information vessel during communication and allows for
- * de-/serialization from to JSON.. Can either be [StructuredAddress] or [CombinedAddress].
+ * An address as used on a QR coded bill and acts as an information vessel during communication and allows for
+ * de-/serialization from to JSON. Can either be [StructuredAddress] or [CombinedAddress].
  *
  * @see Bill
  * @author Ralph Gasser
- * @version 1.0
+ * @version 1.0.0
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes(
-    JsonSubTypes.Type(value = Address.StructuredAddress::class, name = "structured"),
-    JsonSubTypes.Type(value = Address.CombinedAddress::class, name = "combined")
-)
-sealed class Address(open val name: String, open val countryCode: String) {
+@Serializable
+@OneOf(Address.StructuredAddress::class, Address.CombinedAddress::class)
+sealed interface Address {
+
+    val name: String
 
 
-    abstract fun toProcessableAddress(): net.codecrete.qrbill.generator.Address
+    val countryCode: String
+
+
+    fun toProcessableAddress(): net.codecrete.qrbill.generator.Address
 
     /**
      * Structured [Address]
      */
+    @Serializable
+    @SerialName("structured")
     data class StructuredAddress(
-        @JsonProperty("name") override val name: String,
-        @JsonProperty("countryCode") override val countryCode: String,
-        @JsonProperty("street") val street: String,
-        @JsonProperty("houseNo") val houseNo: String,
-        @JsonProperty("postalCode") val postalCode: String,
-        @JsonProperty("town") val town: String
-    ) : Address(name, countryCode) {
+        override val name: String,
+        override val countryCode:
+        String, val street: String,
+        val houseNo: String,
+        val postalCode: String,
+        val town: String
+    ) : Address {
 
         constructor(a: net.codecrete.qrbill.generator.Address): this(
             name = a.name,
@@ -58,12 +63,14 @@ sealed class Address(open val name: String, open val countryCode: String) {
     /**
      * Unstructured [Address]
      */
+    @Serializable
+    @SerialName("unstructured")
     data class CombinedAddress(
-        @JsonProperty("name") override val name: String,
-        @JsonProperty("countryCode") override val countryCode: String,
-        @JsonProperty("addressLine1") val addressLine1: String,
-        @JsonProperty("addressLine2") val addressLine2: String?
-    ) : Address(name, countryCode) {
+        override val name: String,
+        override val countryCode: String,
+        val addressLine1: String,
+        val addressLine2: String?
+    ) : Address {
 
         constructor(a: net.codecrete.qrbill.generator.Address): this(
             name = a.name,

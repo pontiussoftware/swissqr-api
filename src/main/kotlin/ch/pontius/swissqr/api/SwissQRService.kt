@@ -1,24 +1,23 @@
 package ch.pontius.swissqr.api
 
-import ch.pontius.swissqr.api.basics.*
-import ch.pontius.swissqr.api.cli.Cli
-import ch.pontius.swissqr.api.db.DataAccessLayer
-import ch.pontius.swissqr.api.handlers.qr.GenerateQRCodeHandler
-import ch.pontius.swissqr.api.handlers.qr.GenerateQRCodeSimpleHandler
-import ch.pontius.swissqr.api.handlers.qr.ScanQRCodeHandler
-import ch.pontius.swissqr.api.model.service.status.Status
+import ch.pontius.swissqr.api.handlers.API_KEY_HEADER
+import ch.pontius.swissqr.api.handlers.API_KEY_PARAM
+import ch.pontius.swissqr.api.handlers.qr.generateQRCode
+import ch.pontius.swissqr.api.handlers.qr.generateQRCodeSimple
+import ch.pontius.swissqr.api.handlers.qr.scanQRCode
 import ch.pontius.swissqr.api.model.config.Config
-import ch.pontius.swissqr.api.model.access.Access
-import ch.pontius.swissqr.api.model.users.Token
+import ch.pontius.swissqr.api.model.service.status.ErrorStatus
+import ch.pontius.swissqr.api.model.service.status.ErrorStatusException
+import ch.pontius.swissqr.api.utilities.KotlinxJsonMapper
 import io.javalin.Javalin
-import io.javalin.apibuilder.ApiBuilder
 import io.javalin.apibuilder.ApiBuilder.*
-import io.javalin.plugin.openapi.OpenApiOptions
-import io.javalin.plugin.openapi.OpenApiPlugin
-import io.javalin.plugin.openapi.ui.SwaggerOptions
-import io.swagger.v3.oas.models.info.Contact
-import io.swagger.v3.oas.models.info.Info
-import io.swagger.v3.oas.models.info.License
+import io.javalin.openapi.OpenApiInfo
+import io.javalin.openapi.plugin.DefinitionConfiguration
+import io.javalin.openapi.plugin.OpenApiPlugin
+import io.javalin.openapi.plugin.OpenApiPluginConfiguration
+import io.javalin.openapi.plugin.SecurityComponentConfiguration
+import io.javalin.openapi.plugin.swagger.SwaggerConfiguration
+import io.javalin.openapi.plugin.swagger.SwaggerPlugin
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -44,78 +43,85 @@ fun main(args: Array<String>) {
         System.getProperties().setProperty("log4j.configurationFile", config.logConfig.toString())
     }
 
-    /* Initialize data access layer. */
-    val dataAccessLayer = DataAccessLayer(config.data)
-
-    /* Prepare list of HTTP handlers. */
-    val handlers = listOf(
-        GenerateQRCodeHandler(),
-        GenerateQRCodeSimpleHandler(),
-        ScanQRCodeHandler()
-    )
-
-    /* Initialize Javalin. */
-    val javalin = Javalin.create { c ->
-        c.registerPlugin(OpenApiPlugin(getOpenApiOptions()))
-        c.defaultContentType = "application/json"
-        c.accessManager(AccessManager(dataAccessLayer.tokenStore))
-        c.enableCorsForAllOrigins()
-        c.requestLogger { ctx, f -> requestLogger.info("Request ${ctx.req.requestURI} completed in ${f}ms.")}
-        c.server { config.server.server() }
-        c.enforceSsl = config.server.sslEnforce
-    }.routes {
-        path("public") {
-            handlers.forEach { handler ->
-                path(handler.route) {
-                    when (handler) {
-                        is GetRestHandler -> get(handler::get, handler.requiredPermissions)
-                        is PostRestHandler -> post(handler::post, handler.requiredPermissions)
-                        is PatchRestHandler -> patch(handler::patch, handler.requiredPermissions)
-                        is DeleteRestHandler -> delete(handler::delete, handler.requiredPermissions)
+    Javalin.create { c ->
+        /* Configure routes. */
+        c.router.apiBuilder {
+            path("api") {
+                path("qr") {
+                    path("generate") {
+                        get("{type}") { generateQRCodeSimple(it) }
+                        post("{type}") { generateQRCode(it) }
+                    }
+                    path("scan") {
+                        post { scanQRCode(it) }
                     }
                 }
             }
-            after {
-                val token = it.attribute<Token>(AccessManager.API_KEY_PARAM)
-                if (token is Token) {
-                    dataAccessLayer.accessLogs.append(Access(token.id, it.ip(), it.path(), it.method(), it.status(), System.currentTimeMillis()))
-                }
+        }
+
+        /* Enable CORS. */
+        c.bundledPlugins.enableCors { cors ->
+            cors.addRule {
+                it.reflectClientOrigin =
+                    true // anyHost() has similar implications and might be used in production? I'm not sure how to cope with production and dev here simultaneously
+                it.allowCredentials = true
             }
         }
-        path("internal") {
 
+        /* We use Kotlinx serialization for de-/serialization. */
+        c.jsonMapper(KotlinxJsonMapper)
+
+        /* Registers Open API plugin. */
+        c.registerPlugin(OpenApiPlugin { openApiConfig: OpenApiPluginConfiguration ->
+            openApiConfig
+                .withDocumentationPath("/swagger-docs")
+                .withDefinitionConfiguration { _: String, openApiDefinition: DefinitionConfiguration ->
+                    openApiDefinition
+                        .withInfo { openApiInfo: OpenApiInfo ->
+                            openApiInfo
+                                .title("Swiss QR Web Service")
+                                .version("1.0.0")
+                                .description("This is Open API web service that can be used to generate and read Swiss QR codes for invoices.\n\nUsage requires a valid API token!")
+                                .contact("pontius software GmbH", "https://www.pontius.ch", "rg@pontius.ch")
+                        }
+                        .withSecurity { openApiSecurity: SecurityComponentConfiguration ->
+                            openApiSecurity.withBearerAuth("bearerAuth")
+                        }
+                }
+        })
+
+        /* Registers Swagger Plugin. */
+        c.registerPlugin(SwaggerPlugin { swaggerConfiguration: SwaggerConfiguration ->
+            swaggerConfiguration.documentationPath = "/swagger-docs"
+            swaggerConfiguration.uiPath = "/swagger-ui"
+        })
+    }.beforeMatched { ctx ->
+        /* Tries to obtain the access token. */
+        if (ctx.path().startsWith("/api/")) {
+            val tokenId = ctx.header(API_KEY_HEADER)?.replace("Bearer ", "") ?: ctx.queryParam(API_KEY_PARAM)
+            if (tokenId == null) {
+                throw ErrorStatusException(401, "API token is missing from request.")
+            }
+            if (!config.keys.contains(tokenId)) {
+                throw ErrorStatusException(401, "API token is invalid.")
+            }
         }
-    }.before {
-        requestLogger.debug("${it.req.method} request to ${it.path()} with params (${it.queryParamMap().map { e -> "${e.key}=${e.value}" }.joinToString()}) from ${it.req.remoteAddr}")
-    }.error(401) {
-        it.json(Status.ErrorStatus(401, "Unauthorized request!"))
+    }.before { ctx ->
+        val req = ctx.req()
+        requestLogger.debug("${req.method} request to ${ctx.path()} with params (${ctx.queryParamMap().map { e -> "${e.key}=${e.value}" }.joinToString()}) from ${req.remoteAddr}")
+    }.error(401) { ctx ->
+        ctx.json(ErrorStatus(401, "Unauthorized request!"))
+        requestLogger.error("Unauthorized request to {}.", ctx.path())
+    }.exception(ErrorStatusException::class.java) { e, ctx ->
+        ctx.status(e.status).json(ErrorStatus(e.status, e.description))
+        requestLogger.error("Exception during handling of request to {}: {}", ctx.path(), e)
     }.exception(Exception::class.java) { e, ctx ->
-        ctx.status(500).json(Status.ErrorStatus(500, "Internal server error: ${e.message}"))
-        requestLogger.error("Exception during handling of request to ${ctx.path()}", e)
-    }.start()
+        ctx.status(500).json(ErrorStatus(500, "Internal server error: ${e.message}"))
+        requestLogger.error("Exception during handling of request to {}: {}", ctx.path(), e)
+    }.start(config.server.port)
 
-    /* Starts CLI loop (blocking). */
-    Cli(dataAccessLayer, config).loop()
-
-    /* Continues when CLI exits; causes Javalin will shutdown. */
-    javalin.stop()
-}
-
-
-private fun getOpenApiOptions(): OpenApiOptions {
-    val contact = Contact()
-    contact.name = "pontius software GmbH"
-    contact.email = "rg@pontius.ch"
-    contact.url = "https://www.pontius.ch"
-
-    val applicationInfo: Info = Info()
-        .version("1.0.0")
-        .title("Swiss QR Web Service")
-        .description("This is Open API web service that can be used to generate and read Swiss QR codes for invoices.\n\nUsage requires a valid API token!")
-
-    return OpenApiOptions(applicationInfo).apply {
-        path("/openapi.json") // endpoint for OpenAPI JSON
-        swagger(SwaggerOptions(""))
-        activateAnnotationScanningFor("ch.pontius.swissqr.api.handlers.qr")
+    /* Wait for user to abort. */
+    while (true) {
+        Thread.sleep(1000)
     }
 }

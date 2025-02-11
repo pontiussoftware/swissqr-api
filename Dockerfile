@@ -1,19 +1,16 @@
-FROM zenika/kotlin:1.3-jdk11 AS build
+FROM gradle:jdk21 AS build
+COPY --chown=gradle:gradle . /swissqr-api
+WORKDIR /swissqr-api
+RUN gradle --no-daemon distTar
+WORKDIR /swissqr-api/build/distributions
+RUN tar -xf ./swissqr-bin.tar
 
-COPY . /swissqr-src
-RUN cd /swissqr-src && \
-  ./gradlew distTar && \
-  mkdir swissqr-bin && \
-  cd swissqr-bin && \
-  tar xf ../build/distributions/swissqr-bin.tar
-
-
-FROM zenika/kotlin:1.3-jdk11
+FROM eclipse-temurin:21-jre
 
 RUN mkdir /data
 COPY config.json /data/
-COPY --from=build /swissqr-src/swissqr-bin /
+COPY --from=build /swissqr-api/build/distributions/swissqr-bin /swissqr-bin
 
-EXPOSE 8080
+EXPOSE 8081
 
-ENTRYPOINT /swissqr-bin/bin/SwissQR /data/config.json
+ENTRYPOINT /swissqr-bin/bin/SwissQRService /data/config.json

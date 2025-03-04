@@ -49,14 +49,12 @@ fun main(args: Array<String>) {
         c.router.apiBuilder {
             path("api") {
                 path("qr") {
-                    path("generate") {
-                        path("unstructured") {
-                            get("{type}") { getGenerateUnstructuredQRCode(it) }
-                        }
-                        path("structured") {
-                            get("{type}") { getGenerateStructuredQRCode(it) }
-                            post("{type}") { postGenerateStructuredQRCode(it) }
-                        }
+                    path("simple") {
+                        get("{type}") { getGenerateUnstructuredQRCode(it) }
+                    }
+                    path("structured") {
+                        get("{type}") { getGenerateStructuredQRCode(it) }
+                        post("{type}") { postGenerateStructuredQRCode(it) }
                     }
                     path("scan") {
                         post { scanQRCode(it) }

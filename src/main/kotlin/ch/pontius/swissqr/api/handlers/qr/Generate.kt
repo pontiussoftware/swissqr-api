@@ -19,12 +19,9 @@ import java.math.BigDecimal
 
 
 @OpenApi(
-    summary = "Generates a new unstructured QR code with the information provided via GET. Important: This type of QR code should not be used after September 2025.",
-    path = "/api/qr/generate/unstructured/{type}",
+    summary = "Generates a new unstructured (simple) QR code with the information provided via GET. Important: This type of QR code should not be used after September 2025.",
+    path = "/api/qr/simple/{type}",
     methods = [HttpMethod.GET],
-    headers = [
-        OpenApiParam(API_KEY_HEADER, String::class, description = "API Token used for authentication. Must be either set in URL or header. Syntax: Bearer <Token>", required = false)
-    ],
     pathParams = [
         OpenApiParam("type", OutputSize::class, "Type of generated invoice. Can either be A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_BILL_WITH_HORIZONTAL_LINE or QR_CODE_ONLY."),
     ],
@@ -91,11 +88,8 @@ fun getGenerateUnstructuredQRCode(ctx: Context) {
 
 @OpenApi(
     summary = "Generates a new structured QR code with the information provided via GET.",
-    path = "/api/qr/generate/structured/{type}",
+    path = "/api/qr/structured/{type}",
     methods = [HttpMethod.GET],
-    headers = [
-        OpenApiParam(API_KEY_HEADER, String::class, description = "API Token used for authentication. Must be either set in URL or header. Syntax: Bearer <Token>", required = false)
-    ],
     pathParams = [
         OpenApiParam("type", OutputSize::class, "Type of generated invoice. Can either be A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_BILL_WITH_HORIZONTAL_LINE or QR_CODE_ONLY."),
     ],
@@ -169,7 +163,7 @@ fun getGenerateStructuredQRCode(ctx: Context) {
 
 @OpenApi(
     summary = "Generates a new structured QR code with the information provided via POST.",
-    path = "/api/qr/generate/structured/{type}",
+    path = "/api/qr/structured/{type}",
     methods = [HttpMethod.POST],
     headers = [
         OpenApiParam(API_KEY_HEADER, String::class, description = "API Token used for authentication. Syntax: Bearer <Token>", required = true)
@@ -223,7 +217,7 @@ private fun generateQRCode(bill: net.codecrete.qrbill.generator.Bill, ctx: Conte
     }
 
     try {
-        bill.format.language = Language.valueOf(ctx.pathParamMap().getOrDefault("type", "PNG").uppercase())
+        bill.format.language = Language.valueOf(ctx.pathParamMap().getOrDefault("language", "EN").uppercase())
     } catch (e: IllegalArgumentException) {
         throw ErrorStatusException(400, "Illegal value for parameter 'language'. Possible values are DE, FR, IT or EN!")
     }

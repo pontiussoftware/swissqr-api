@@ -7,14 +7,14 @@ import kotlinx.serialization.Serializable
 
 /**
  * An address as used on a QR coded bill and acts as an information vessel during communication and allows for
- * de-/serialization from to JSON. Can either be [StructuredAddress] or [CombinedAddress].
+ * de-/serialization from to JSON. Can either be [Structured] or [Combined].
  *
  * @see Bill
  * @author Ralph Gasser
  * @version 1.0.0
  */
 @Serializable
-@OneOf(Address.StructuredAddress::class, Address.CombinedAddress::class)
+@OneOf(Address.Structured::class, Address.Combined::class)
 sealed interface Address {
 
     val name: String
@@ -30,7 +30,7 @@ sealed interface Address {
      */
     @Serializable
     @SerialName("structured")
-    data class StructuredAddress(
+    data class Structured(
         override val name: String,
         override val countryCode:
         String, val street: String,
@@ -65,7 +65,7 @@ sealed interface Address {
      */
     @Serializable
     @SerialName("unstructured")
-    data class CombinedAddress(
+    data class Combined(
         override val name: String,
         override val countryCode: String,
         val addressLine1: String,

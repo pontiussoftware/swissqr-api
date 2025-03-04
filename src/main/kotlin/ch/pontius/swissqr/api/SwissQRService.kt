@@ -2,8 +2,9 @@ package ch.pontius.swissqr.api
 
 import ch.pontius.swissqr.api.handlers.API_KEY_HEADER
 import ch.pontius.swissqr.api.handlers.API_KEY_PARAM
-import ch.pontius.swissqr.api.handlers.qr.generateQRCode
-import ch.pontius.swissqr.api.handlers.qr.generateQRCodeSimple
+import ch.pontius.swissqr.api.handlers.qr.postGenerateStructuredQRCode
+import ch.pontius.swissqr.api.handlers.qr.getGenerateUnstructuredQRCode
+import ch.pontius.swissqr.api.handlers.qr.getGenerateStructuredQRCode
 import ch.pontius.swissqr.api.handlers.qr.scanQRCode
 import ch.pontius.swissqr.api.model.config.Config
 import ch.pontius.swissqr.api.model.service.status.ErrorStatus
@@ -49,8 +50,13 @@ fun main(args: Array<String>) {
             path("api") {
                 path("qr") {
                     path("generate") {
-                        get("{type}") { generateQRCodeSimple(it) }
-                        post("{type}") { generateQRCode(it) }
+                        path("unstructured") {
+                            get("{type}") { getGenerateUnstructuredQRCode(it) }
+                        }
+                        path("structured") {
+                            get("{type}") { getGenerateStructuredQRCode(it) }
+                            post("{type}") { postGenerateStructuredQRCode(it) }
+                        }
                     }
                     path("scan") {
                         post { scanQRCode(it) }

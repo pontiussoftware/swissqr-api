@@ -1,5 +1,5 @@
 # Swiss QR API
-![Swiss QR CI](https://github.com/pontiussoftware/swissqr-api/workflows/Swiss%20QR%20CI/badge.svg?branch=master)
+[![Swiss QR CI](https://github.com/pontiussoftware/swissqr-api/actions/workflows/ci.yml/badge.svg)](https://github.com/pontiussoftware/swissqr-api/actions/workflows/ci.yml)
 [![swagger-editor](https://img.shields.io/badge/open--API-in--editor-brightgreen.svg?style=flat&label=open-api-v3)](https://editor.swagger.io/?url=https://raw.githubusercontent.com/pontiussoftware/swissqr-api/master/docs/openapi-v3.json)
 
 This is an Open API based RESTful service that generates and reads Swiss QR code payment slips. Currently, it offers the following functionality:

@@ -23,8 +23,8 @@ The project also comes with a Dockerfile, which can be used instead. You can bui
 ## Credits
 Swiss QR API relies on a bunch of great open source-libraries. The ones I would like to mention here are:
 
-- [SwissQRBill](https://github.com/manuelbl/SwissQRBill): An Java library to generate and decode Swiss QR bills.
-- [Javalin](https://javalin.io/): An web server framework for Java and Kotlin.
+- [SwissQRBill](https://github.com/manuelbl/SwissQRBill): A Java library to generate and decode Swiss QR bills.
+- [Javalin](https://javalin.io/): A web server framework for Java and Kotlin.
 - [BoofCV](https://boofcv.org/): An amazing computer vision framework for Java.
 
 Thanks a lot to the great work of all people involved in these libraries (and of course all the others, that did not get a mention here)!

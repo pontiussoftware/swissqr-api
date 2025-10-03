@@ -23,7 +23,7 @@ import java.math.BigDecimal
     path = "/api/qr/simple/{type}",
     methods = [HttpMethod.GET],
     pathParams = [
-        OpenApiParam("type", OutputSize::class, "Type of generated invoice. Can either be A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_BILL_WITH_HORIZONTAL_LINE or QR_CODE_ONLY."),
+        OpenApiParam("type", OutputSize::class, "Type of generated invoice. Can either be A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_CODE_ONLY, QR_BILL_EXTRA_SPACE, QR_BILL_WITH_HORIZONTAL_LINE or PAYMENT_PART_ONLY."),
     ],
     queryParams = [
         OpenApiParam("amount", Double::class, "Amount to be printed on the invoice.", required = true),
@@ -91,7 +91,7 @@ fun getGenerateUnstructuredQRCode(ctx: Context) {
     path = "/api/qr/structured/{type}",
     methods = [HttpMethod.GET],
     pathParams = [
-        OpenApiParam("type", OutputSize::class, "Type of generated invoice. Can either be A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_BILL_WITH_HORIZONTAL_LINE or QR_CODE_ONLY."),
+        OpenApiParam("type", OutputSize::class, "Type of generated invoice. Can either be A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_CODE_ONLY, QR_BILL_EXTRA_SPACE, QR_BILL_WITH_HORIZONTAL_LINE or PAYMENT_PART_ONLY."),
     ],
     queryParams = [
         OpenApiParam("amount", Double::class, "Amount to be printed on the invoice.", required = true),
@@ -169,7 +169,7 @@ fun getGenerateStructuredQRCode(ctx: Context) {
         OpenApiParam(API_KEY_HEADER, String::class, description = "API Token used for authentication. Syntax: Bearer <Token>", required = true)
     ],
     pathParams = [
-        OpenApiParam("type", OutputSize::class, "Type of generated invoice. Can either be A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_BILL_WITH_HORIZONTAL_LINE or QR_CODE_ONLY."),
+        OpenApiParam("type", OutputSize::class, "Type of generated invoice. Can either be A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_CODE_ONLY, QR_BILL_EXTRA_SPACE, QR_BILL_WITH_HORIZONTAL_LINE or PAYMENT_PART_ONLY."),
     ],
     queryParams = [
         OpenApiParam("format", GraphicsFormat::class, "File format of the resulting QR code (PNG, PDF or SVG). Defaults to PNG."),
@@ -190,7 +190,7 @@ fun postGenerateStructuredQRCode(ctx: Context) {
     /* Extract invoice from request body. */
     val bill = try {
         ctx.bodyAsClass(Bill::class.java).toProcessableBill()
-    } catch (e: BadRequestResponse){
+    } catch (_: BadRequestResponse){
         throw ErrorStatusException(400, "HTTP body could not be parsed into a valid QR invoice model!")
     }
 
@@ -212,13 +212,13 @@ private fun generateQRCode(bill: net.codecrete.qrbill.generator.Bill, ctx: Conte
     /* Extract and validate format parameters. */
     try {
         bill.format.outputSize = OutputSize.valueOf(ctx.pathParamMap().getOrDefault("type", "QR_BILL_ONLY").uppercase())
-    } catch (e: IllegalArgumentException) {
-        throw ErrorStatusException(400, "Illegal value for parameter 'type'. Possible values are A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_BILL_WITH_HORIZONTAL_LINE or QR_CODE_ONLY!")
+    } catch (_: IllegalArgumentException) {
+        throw ErrorStatusException(400, "Illegal value for parameter 'type'. Possible values are A4_PORTRAIT_SHEET, QR_BILL_ONLY, QR_CODE_ONLY, QR_BILL_EXTRA_SPACE, QR_BILL_WITH_HORIZONTAL_LINE or PAYMENT_PART_ONLY!")
     }
 
     try {
-        bill.format.language = Language.valueOf(ctx.pathParamMap().getOrDefault("language", "EN").uppercase())
-    } catch (e: IllegalArgumentException) {
+        bill.format.language = Language.valueOf(ctx.queryParam("language")?.uppercase() ?: "EN")
+    } catch (_: IllegalArgumentException) {
         throw ErrorStatusException(400, "Illegal value for parameter 'language'. Possible values are DE, FR, IT or EN!")
     }
 
